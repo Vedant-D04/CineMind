@@ -2,6 +2,7 @@ import cv2
 import time
 from camera import capture_video
 from color_palette_analysis import analyze_color_palette  # Import the color palette analysis function
+from face_detection import detect_faces  # Import the face detection function
 
 # Initialize the camera feed using capture_video from camera.py
 cap = capture_video()
@@ -17,11 +18,15 @@ while True:
         print("Error: Failed to grab frame.")
         break
 
+    # Perform face detection
+    frame = detect_faces(frame)
+
     # Check if 10 seconds have passed since the last analysis
     current_time = time.time()
     if current_time - last_time >= 10:  # 10 seconds passed
         # Analyze the frame using the color palette analysis script
         frame, suggestions = analyze_color_palette(frame)  # Get suggestions from color palette analysis
+        
         # Print the suggestions to the console
         if suggestions:
             for suggestion in suggestions:
