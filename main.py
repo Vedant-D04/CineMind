@@ -1,9 +1,9 @@
 import cv2
 import time
 from camera import capture_video
-from color_palette_analysis import analyze_color_palette  # Import the color palette analysis function
+from color_palette_analysis import analyze_emotion  # Import the color palette analysis function
 from face_detection import detect_faces  # Import the face detection function
-
+ # Import the emotion analysis function
 # Initialize the camera feed using capture_video from camera.py
 cap = capture_video()
 
@@ -17,6 +17,7 @@ while True:
     if not ret:
         print("Error: Failed to grab frame.")
         break
+    
 
     # Perform face detection
     frame = detect_faces(frame)
@@ -25,14 +26,14 @@ while True:
     current_time = time.time()
     if current_time - last_time >= 10:  # 10 seconds passed
         # Analyze the frame using the color palette analysis script
-        frame, suggestions = analyze_color_palette(frame)  # Get suggestions from color palette analysis
+        frame, suggestions = analyze_emotion(frame)  # Get suggestions from color palette analysis
         
         # Print the suggestions to the console
         if suggestions:
             for suggestion in suggestions:
                 print(suggestion)  # Print suggestions
         last_time = current_time  # Reset the timer
-
+        
     # Show the frame continuously (even when analysis isn't happening)
     cv2.imshow('Film Assistant', frame)
 

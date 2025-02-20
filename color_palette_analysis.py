@@ -1,24 +1,80 @@
 import cv2
+import torch
+import torchvision.transforms as transforms
+from PIL import Image
 import numpy as np
+from FER import DeepCNN
 
-def analyze_color_palette(frame):
-    """
-    Analyzes the color palette of the frame and provides suggestions for color harmony, contrast, and overall aesthetics.
-    Prints the suggestions instead of displaying them on the frame.
-    """
-    height, width, _ = frame.shape
+# Load the pre-trained model
+model = DeepCNN(input_channels=1, num_classes=7)  # Initialize the model architecture
+model.load_state_dict(torch.load("/Users/bhargavdesai/Desktop/AI Film making/v1_93.3.pth", map_location=torch.device('cpu')))
+model.eval()  # Set model to evaluation mode
+
+# Load OpenCV's Haar cascade for face detection
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
+# Define image transformations
+transform = transforms.Compose([
+    transforms.Grayscale(num_output_channels=1),  # Convert to grayscale
+    transforms.Resize((48, 48)),  # Resize to match model input size
+    transforms.ToTensor(),
+])
+
+# Define emotion labels and associated scene types
+emotion_labels = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
+emotion_scene_types = {
+    'angry': 'Intense/Dramatic',
+    'disgust': 'Gritty/Unpleasant',
+    'fear': 'Eerie/Horror',
+    'happy': 'Warm/Joyful',
+    'sad': 'Cold/Melancholic',
+    'surprise': 'Vibrant/Dynamic',
+    'neutral': 'Balanced/Natural'
+}
+
+def analyze_emotion(frame):
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  # Convert frame to grayscale for face detection
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5, minSize=(30, 30))
+
+    emotion = "No face detected"  # Default emotion in case no face is detected
+    suggestions = []  # Default empty suggestions list
+
+    for (x, y, w, h) in faces:
+        face = gray[y:y+h, x:x+w]  # Crop the detected face
+        face_pil = Image.fromarray(face)  # Convert to PIL Image
+        face_tensor = transform(face_pil).unsqueeze(0)  # Apply transformations and add batch dimension
+
+        with torch.no_grad():
+            output = model(face_tensor)  # Get model predictions
+            predicted_index = torch.argmax(output, dim=1).item()  # Get index of highest probability
+            emotion = emotion_labels[predicted_index]  # Map index to emotion
+
+        # Display emotion
+        text = f"{emotion.capitalize()}"
+        cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 255, 255), 2)
+        cv2.putText(frame, text, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
     
-    # Convert the frame to the HSV color space (more intuitive for color analysis)
-    hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    # Now emotion is always defined, so no UnboundLocalError
+    frame, suggestions = analyze_color_palette(frame, emotion)
+    
+    for suggestion in suggestions:
+        print(f"Suggestion based on {emotion}: {suggestion}")
 
-    # Calculate the average hue, saturation, and value (brightness) of the entire frame
+    return frame, suggestions
+
+
+
+def analyze_color_palette(frame, emotion):
+    """
+    Analyzes the color palette of the frame and provides suggestions based on detected emotion.
+    """
+    hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     avg_hue = np.mean(hsv_frame[:, :, 0])
     avg_saturation = np.mean(hsv_frame[:, :, 1])
     avg_brightness = np.mean(hsv_frame[:, :, 2])
 
     suggestions = []
 
-    # Check for color harmony: if the colors are too varied or clashing
     if avg_saturation > 150:
         suggestions.append("The color palette is quite saturated. Consider reducing saturation for a more balanced look.")
     
@@ -27,22 +83,25 @@ def analyze_color_palette(frame):
     elif avg_brightness > 200:
         suggestions.append("The scene is quite bright. A more balanced brightness would make the scene more visually appealing.")
 
-    # Analyze if the scene has good contrast between the subject and the background
-    contrast = cv2.Laplacian(frame, cv2.CV_64F).var()  # Higher variance means higher contrast
+    contrast = cv2.Laplacian(frame, cv2.CV_64F).var()
     if contrast < 50:
         suggestions.append("The contrast in the scene is low. Increase contrast to make the subject stand out more.")
-
-    # Suggest color temperature (warm vs cool)
+    
     if 10 < avg_hue < 50:
         suggestions.append("The scene has a warm color palette, which is good for creating a cozy or energetic mood.")
     elif 100 < avg_hue < 140:
         suggestions.append("The scene has a cool color palette, which gives a calm or clinical feel.")
-
-    # Print the suggestions
-    if suggestions:
-        for suggestion in suggestions:
-            print("Color palette analysis:"+suggestion)
-    else:
-        print("The color palette seems balanced.")
+    
+    emotion_based_suggestions = {
+        'angry': "Consider using intense and contrasting colors to emphasize drama.",
+        'disgust': "A gritty and desaturated color palette might enhance the uneasy feeling.",
+        'fear': "Dark, high-contrast visuals can enhance the eerie effect.",
+        'happy': "Warm and bright colors can enhance the joyful atmosphere.",
+        'sad': "Cool and desaturated colors can reinforce the melancholic mood.",
+        'surprise': "High contrast and vibrant colors can amplify excitement.",
+        'neutral': "A balanced color scheme is suitable for a natural look."
+    }
+    
+    suggestions.append(emotion_based_suggestions.get(emotion, "No specific suggestion."))
 
     return frame, suggestions
