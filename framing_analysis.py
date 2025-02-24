@@ -1,123 +1,107 @@
 import cv2
 import time
+from FaceDetector import FaceDetector, validate_face_region
 
 # Global variables to store suggestions and track time
 previous_suggestions = []
-last_suggestion_time = 0  # Track the last time a suggestion was made
-current_suggestion_index = 0  # Keep track of the index of the current suggestion
+last_suggestion_time = 0
+current_suggestion_index = 0
 
-def detect_subject_position(frame):
-    """
-    Dummy function to simulate subject detection.
-    In a real implementation, you could use person detection or object detection models like YOLO.
-    Returns the (x, y) coordinates of the subject in the frame.
-    """
-    height, width, _ = frame.shape
-    subject_x = width // 2  # Dummy position at the center
-    subject_y = height // 2  # Dummy position at the center
-    return subject_x, subject_y
+# Initialize face detector
+face_detector = FaceDetector()
 
-def check_headroom(subject_y, height):
-    """
-    Dummy function to check headroom.
-    In a real case, you would check the amount of space above the subject's head.
-    """
-    if subject_y > height * 0.1:
-        return True  # Adequate headroom
-    return False  # Insufficient headroom
+def check_headroom(face, frame_height):
+    """Check if there's enough space above the face"""
+    x, y, w, h = face
+    # Calculate the space above the face as a ratio
+    headroom_ratio = y / frame_height
+    # Consider good headroom to be between 10-30% of frame height
+    return 0.1 <= headroom_ratio <= 0.3
 
-def check_looking_room(frame, subject_x, subject_y):
-    """
-    Dummy function to check looking room.
-    In a real case, this would check the space in front of the subject's gaze.
-    """
-    height, width, _ = frame.shape
-    if subject_x < width * 0.8:  # Checking if subject has enough space in the frame
-        return True
-    return False
+def check_looking_room(face, frame_width):
+    """Check if there's enough space in front of the face"""
+    x, y, w, h = face
+    # Assume subject is looking right - check space to the right of face
+    space_ratio = (frame_width - (x + w)) / frame_width
+    return space_ratio >= 0.2
 
-def check_balance(frame):
-    """
-    Dummy function to check balance in the composition.
-    This can be extended to analyze the overall composition using visual analysis.
-    """
-    # Placeholder logic: always return balanced composition.
-    return True
+def check_rule_of_thirds(face, frame_width, frame_height):
+    """Check if face is positioned near rule of thirds intersections"""
+    x, y, w, h = face
+    # Calculate face center
+    face_center_x = x + w/2
+    face_center_y = y + h/2
+    
+    # Calculate rule of thirds lines
+    third_w = frame_width / 3
+    third_h = frame_height / 3
+    
+    # Check if face center is near any rule of thirds intersection
+    near_third_x = abs(face_center_x - third_w) < w/2 or abs(face_center_x - 2*third_w) < w/2
+    near_third_y = abs(face_center_y - third_h) < h/2 or abs(face_center_y - 2*third_h) < h/2
+    
+    return near_third_x and near_third_y
 
 def analyze_framing(frame):
-    """
-    Analyzes the framing of the shot, checking rule of thirds, headroom, looking room, and balance.
-    Returns a frame with visual feedback and a list of suggestions.
-    """
+    """Analyzes the framing of the shot using actual face detection"""
     global previous_suggestions, last_suggestion_time, current_suggestion_index
-
-    height, width, _ = frame.shape
-    subject_x, subject_y = detect_subject_position(frame)
     
+    height, width = frame.shape[:2]
     suggestions = []
-
-    # Rule of Thirds: Check if the subject is aligned
-    if subject_x is not None and subject_y is not None:
-        grid_x1 = width // 3
-        grid_x2 = 2 * width // 3
-        grid_y1 = height // 3
-        grid_y2 = 2 * height // 3
-
-        if not (grid_x1 < subject_x < grid_x2 and grid_y1 < subject_y < grid_y2):
-            suggestions.append("Adjust subject position for better rule of thirds alignment.")
-
-        # Headroom: Check the amount of space above the subject
-        if not check_headroom(subject_y, height):
-            suggestions.append("Increase headroom.")
-
-        # Looking Room: Check if the subject has appropriate space in the direction they are looking
-        if not check_looking_room(frame, subject_x, subject_y):
-            suggestions.append("Provide more looking room.")
-
-        # Balance: Check the overall balance of the composition
-        if not check_balance(frame):
-            suggestions.append("Reposition the shot for better balance.")
     
-    # If there are new suggestions, update the previous ones
+    # Detect faces using FaceDetector
+    faces = face_detector.detect_faces(frame)
+    
+    # If faces were detected, analyze the composition
+    if faces:
+        # Use the largest face for composition analysis (assuming it's the main subject)
+        largest_face = max(faces, key=lambda face: face[2] * face[3])
+        
+        if validate_face_region(frame, largest_face):
+            # Check rule of thirds
+            if not check_rule_of_thirds(largest_face, width, height):
+                suggestions.append("Move subject to align with rule of thirds points")
+            
+            # Check headroom
+            if not check_headroom(largest_face, height):
+                suggestions.append("Adjust camera position for better headroom")
+            
+            # Check looking room
+            if not check_looking_room(largest_face, width):
+                suggestions.append("Provide more looking room in front of the subject")
+
+    # Update suggestion rotation system
     if suggestions:
         previous_suggestions = suggestions
 
-    # Check if 5 seconds have passed before showing the next suggestion
     current_time = time.time()
     if current_time - last_suggestion_time >= 5 and previous_suggestions:
-        # Update the time for the last suggestion
         last_suggestion_time = current_time
         
-        # Get the current suggestion based on the index
         if current_suggestion_index < len(previous_suggestions):
             current_suggestion = previous_suggestions[current_suggestion_index]
-            current_suggestion_index += 1  # Move to the next suggestion
+            current_suggestion_index += 1
         else:
-            current_suggestion_index = 0  # Reset index once all suggestions have been displayed
+            current_suggestion_index = 0
             current_suggestion = previous_suggestions[0]
         
-        suggestions = [current_suggestion]  # Only display the current suggestion
+        suggestions = [current_suggestion]
 
-    # Visual feedback (highlighting the subject and adding gridlines)
-    if subject_x is not None and subject_y is not None:
-        cv2.rectangle(frame, (subject_x - 20, subject_y - 20), (subject_x + 20, subject_y + 20), (0, 255, 0), 2)
-
-    # Draw gridlines for the rule of thirds
+    # Draw visual feedback
+    # Rule of thirds grid
     grid_x1 = width // 3
     grid_x2 = 2 * width // 3
     grid_y1 = height // 3
     grid_y2 = 2 * height // 3
+    
     cv2.line(frame, (grid_x1, 0), (grid_x1, height), (255, 255, 255), 2)
     cv2.line(frame, (grid_x2, 0), (grid_x2, height), (255, 255, 255), 2)
     cv2.line(frame, (0, grid_y1), (width, grid_y1), (255, 255, 255), 2)
     cv2.line(frame, (0, grid_y2), (width, grid_y2), (255, 255, 255), 2)
 
-    # Add suggestions text to the frame
-    if suggestions:
-        y_offset = 30
-        for suggestion in suggestions:
-            cv2.putText(frame, suggestion, (10, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
-            y_offset += 30  # Move down for the next suggestion
+    # Highlight detected faces
+    for face in faces:
+        x, y, w, h = face
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-    # Return the frame with visual feedback
-    return frame
+    return frame, suggestions

@@ -1,0 +1,78 @@
+{
+  "training_data": {
+    "mixed_emotions": [
+      {
+        "combination": "happy_nostalgia",
+        "input_examples": [
+          "Colors for a happy but nostalgic reunion",
+          "How to show joyful memories",
+          "Palette for bittersweet happiness",
+          "Colors for remembering good times",
+          "How to mix happiness with gentle sadness"
+        ],
+        "response": {
+          "description": "Warm but slightly faded, combining brightness with soft vintage tones",
+          "colors": {
+            "primary": ["soft yellow", "muted orange", "warm gold"],
+            "secondary": ["faded blue", "dusty pink"],
+            "accent": ["cream", "light sepia"]
+          },
+          "properties": {
+            "contrast": "medium",
+            "warmth": "warm but not intense",
+            "saturation": "medium with selective high points",
+            "lighting": "soft golden with slight haziness"
+          }
+        }
+      },
+      {
+        "combination": "fear_power",
+        "input_examples": [
+          "Colors for an intimidating villain",
+          "How to show threatening power",
+          "Palette for scary authority figure",
+          "Colors for powerful monster",
+          "How to mix fear with dominance"
+        ],
+        "response": {
+          "description": "Dark and imposing with hints of luxury and threat",
+          "colors": {
+            "primary": ["deep purple", "black", "dark red"],
+            "secondary": ["midnight blue", "dark gold"],
+            "accent": ["blood red", "metallic silver"]
+          },
+          "properties": {
+            "contrast": "very high",
+            "warmth": "cold with warm accents",
+            "saturation": "low base with rich accents",
+            "lighting": "dramatic spotlighting with deep shadows"
+          }
+        }
+      },
+      {
+        "combination": "sadness_love",
+        "input_examples": [
+          "Colors for unrequited love",
+          "How to show painful romance",
+          "Palette for saying goodbye to loved one",
+          "Colors for tragic love story",
+          "How to mix romance with grief"
+        ],
+        "response": {
+          "description": "Soft and romantic with melancholic undertones",
+          "colors": {
+            "primary": ["muted pink", "pale purple", "soft blue"],
+            "secondary": ["gray", "faded red"],
+            "accent": ["silver", "deep rose"]
+          },
+          "properties": {
+            "contrast": "low to medium",
+            "warmth": "alternating warm and cool",
+            "saturation": "selective with emotional moments",
+            "lighting": "soft and dreamy with blue undertones"
+          }
+        }
+      }
+    ]
+  }
+}

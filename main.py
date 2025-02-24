@@ -1,46 +1,60 @@
+# main.py
 import cv2
 import time
 from camera import capture_video
-from color_palette_analysis import analyze_emotion  # Import the color palette analysis function
-from face_detection import detect_faces  # Import the face detection function
- # Import the emotion analysis function
-# Initialize the camera feed using capture_video from camera.py
+from color_palette_analysis import analyze_emotion
+from face_detection import detect_faces
+from framing_analysis import analyze_framing
+
+# Initialize the camera feed
 cap = capture_video()
 
 # Initialize time tracking variables
-last_time = time.time()
+last_color_analysis_time = time.time()
+last_framing_analysis_time = time.time()
 
-# Loop to continuously capture frames from the camera
+print("\nFilm Assistant Started")
+print("Press 'q' to quit\n")
+
 while True:
-    ret, frame = cap.read()  # Capture a frame from the video feed
-
+    ret, frame = cap.read()
     if not ret:
         print("Error: Failed to grab frame.")
         break
-    
 
     # Perform face detection
     frame = detect_faces(frame)
+    
+    # Perform framing analysis
+    
 
-    # Check if 10 seconds have passed since the last analysis
+    # Color/emotion analysis every 10 seconds
     current_time = time.time()
-    if current_time - last_time >= 10:  # 10 seconds passed
-        # Analyze the frame using the color palette analysis script
-        frame, suggestions = analyze_emotion(frame)  # Get suggestions from color palette analysis
+    if current_time - last_color_analysis_time >= 10:
         
-        # Print the suggestions to the console
-        if suggestions:
-            for suggestion in suggestions:
-                print(suggestion)  # Print suggestions
-        last_time = current_time  # Reset the timer
+    
+    # Print framing suggestions when available
         
-    # Show the frame continuously (even when analysis isn't happening)
+        print("\nFraming Suggestions:")
+        frame, framing_suggestions = analyze_framing(frame)
+        print(f"- {framing_suggestions}")
+            
+        
+        
+        
+        print("\nColor/Emotion Analysis:")
+        frame, color_suggestions = analyze_emotion(frame)
+        print(f"- {color_suggestions}")
+        
+        last_color_analysis_time = current_time
+
+    # Show the frame
     cv2.imshow('Film Assistant', frame)
 
-    # Check for the 'q' key press to exit the loop
+    # Check for quit command
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-# Release the camera and close any OpenCV windows
+# Cleanup
 cap.release()
 cv2.destroyAllWindows()

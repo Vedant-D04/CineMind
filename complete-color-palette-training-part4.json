@@ -1,0 +1,77 @@
+{
+  "training_data": {
+    "technical_specifications": {
+      "lighting_setups": {
+        "three_point": {
+          "key_light": {
+            "description": "Sets the primary emotional tone",
+            "happy": "Bright and warm",
+            "sad": "Soft and cool",
+            "fear": "Harsh and directional",
+            "anger": "Intense and warm"
+          },
+          "fill_light": {
+            "description": "Supports the mood without changing it",
+            "happy": "Soft warm fill",
+            "sad": "Minimal fill",
+            "fear": "Very low fill ratio",
+            "anger": "Strong colored fill"
+          },
+          "back_light": {
+            "description": "Separates subject from background",
+            "happy": "Bright rim light",
+            "sad": "Soft edge light",
+            "fear": "Sharp rim light",
+            "anger": "Strong colored rim"
+          }
+        },
+        "color_temperature": {
+          "warm": {
+            "range": "2700K-3000K",
+            "usage": "Cozy/intimate scenes",
+            "emotions": ["happiness", "love", "nostalgia"]
+          },
+          "neutral": {
+            "range": "4000K-5000K",
+            "usage": "Natural daylight",
+            "emotions": ["mixed", "balanced", "reality"]
+          },
+          "cool": {
+            "range": "6000K-6500K",
+            "usage": "Clinical/tense scenes",
+            "emotions": ["fear", "isolation", "sadness"]
+          }
+        }
+      },
+      "color_harmonies": {
+        "complementary": {
+          "description": "High energy and contrast",
+          "best_for": ["power", "anger", "intense happiness"],
+          "examples": [
+            "Blue/Orange for thriller contrasts",
+            "Red/Green for tension",
+            "Purple/Yellow for royal power"
+          ]
+        },
+        "analogous": {
+          "description": "Harmony and comfort",
+          "best_for": ["happiness", "love", "nostalgia"],
+          "examples": [
+            "Yellow/Orange/Red for warmth",
+            "Blue/Green/Teal for calm",
+            "Purple/Blue/Indigo for mystery"
+          ]
+        },
+        "triadic": {
+          "description": "Vibrant but balanced",
+          "best_for": ["fantasy", "adventure", "celebration"],
+          "examples": [
+            "Red/Yellow/Blue for energy",
+            "Orange/Green/Purple for variety",
+            "Pink/Yellow/Blue for playfulness"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -36,8 +36,6 @@ def analyze_emotion(frame):
             _, predicted = torch.max(output, 1)  # Get highest probability class
             emotion = emotion_labels[predicted.item()]  # Map index to emotion
         
-        # Draw bounding box and label
-        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-        cv2.putText(frame, emotion, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+        
 
     return frame
