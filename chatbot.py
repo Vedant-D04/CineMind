@@ -1,261 +1,323 @@
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
-from langchain.chains import ConversationalRetrievalChain
-from langchain.prompts import PromptTemplate
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-import torch
-import json
-from typing import List, Dict
-import os
+import random
+from sentence_transformers import SentenceTransformer
+import faiss
+import numpy as np
 
-class LocalT5Generator:
-    def __init__(self):
-        self.tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-large")
-        self.model = AutoModelForSeq2SeqLM.from_pretrained("google/flan-t5-large")
-        if torch.cuda.is_available():
-            self.model = self.model.to('cuda')
-        
-    def __call__(self, prompt: str, max_length: int = 1024, temperature: float = 1) -> str:
-        inputs = self.tokenizer(prompt, return_tensors="pt", truncation=True, max_length=1024)
-        if torch.cuda.is_available():
-            inputs = {k: v.to('cuda') for k, v in inputs.items()}
-        
-        outputs = self.model.generate(
-            **inputs,
-            max_length=max_length,
-            temperature=temperature,
-            do_sample=True,
-            num_return_sequences=1,
-            num_beams=5,
-            no_repeat_ngram_size=2,
-            early_stopping=True,
-            pad_token_id=self.tokenizer.pad_token_id
-        )
-        return self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+def create_index(palettes):
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    descriptions = list(palettes.keys())
+    embeddings = model.encode(descriptions)
+    index = faiss.IndexFlatL2(embeddings.shape[1])
+    index.add(np.array(embeddings).astype('float32'))
+    return index, descriptions, model
 
-class EnhancedColorPaletteRAG:
-    def __init__(self):
-        self.embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-mpnet-base-v2"
-        )
-        
-        self.generator = LocalT5Generator()
-        
-        # Modified prompt template for more structured and focused responses
-        self.qa_prompt = PromptTemplate(
-            template="""You are a professional color consultant. Create a detailed color palette recommendation for this scene: {question}
+def get_color_palette(mood, index, descriptions, model, palettes, num_results=3):
+    mood_embedding = model.encode([mood]).astype('float32')
+    distances, closest = index.search(mood_embedding, num_results)
+    results = []
+    for i in range(num_results):
+        match = descriptions[closest[0][i]]
+        similarity_score = 1 - (distances[0][i] / 2)  # Convert distance to similarity (approximate)
+        results.append((match, palettes[match], similarity_score))
+    return results
 
-Using the following context about color psychology and emotions: {context}
-
-Provide your response in exactly this format:
-
-SCENE DESCRIPTION:
-[Write a short, atmospheric description of the scene in 2-3 sentences]
-
-SUGGESTED PALETTE:
-
-Primary Colors (choose exactly 3):
-1. [Specific color name] - [One sentence about its purpose and emotional effect]
-2. [Specific color name] - [One sentence about its purpose and emotional effect]
-3. [Specific color name] - [One sentence about its purpose and emotional effect]
-
-Accent Colors (choose exactly 2):
-1. [Specific color name] - [One sentence about its purpose and emotional effect]
-2. [Specific color name] - [One sentence about its purpose and emotional effect]
-
-RATIONALE:
-[2-3 sentences explaining why this palette works together for the scene]""",
-            input_variables=["context", "question"]
-        )
-        
-        self.vector_store = None
-        
-    def initialize_from_json(self, json_files):
-        color_knowledge = self._process_enhanced_knowledge(json_files)
-        self.vector_store = FAISS.from_texts(
-            color_knowledge,
-            self.embeddings
-        )
-
-    def _process_enhanced_knowledge(self, json_files):
-        documents = []
-        
-        for file_path in json_files:
-            try:
-                with open(file_path, 'r') as f:
-                    data = json.load(f)
-                
-                if "training_data" in data:
-                    training_data = data["training_data"]
-                    
-                    if "pure_emotions" in training_data:
-                        for emotion in training_data["pure_emotions"]:
-                            emotion_name = emotion.get("emotion", "Unknown")
-                            doc = f"""Color Principle - {emotion_name}:
-                            Primary colors: {', '.join(emotion['response']['colors'].get('primary', []))}
-                            Effect: {emotion['response']['description']}
-                            Psychological impact: {emotion['response'].get('psychological_impact', '')}
-                            Best used for: {emotion['response'].get('best_used_for', '')}
-                            """
-                            documents.append(doc)
-                    
-                    if "technical_specifications" in training_data:
-                        tech_specs = training_data["technical_specifications"]
-                        for category, specs in tech_specs.items():
-                            doc = f"""Technical Principle - {category}:
-                            Colors: {specs.get('colors', [])}
-                            Mood: {specs.get('mood', '')}
-                            Time of day effects: {specs.get('time_of_day_effects', '')}
-                            """
-                            documents.append(doc)
-            
-            except Exception as e:
-                continue
-        
-        return documents
-    
-    def get_recommendation(self, query: str, chat_history: List = None) -> dict:
-        if not self.vector_store:
-            return {"error": "System not initialized"}
-        
-        query_aspects = self._analyze_query(query)
-        enhanced_query = self._enhance_query(query, query_aspects)
-        docs = self.vector_store.similarity_search(enhanced_query, k=3)
-        context = "\n".join(doc.page_content for doc in docs)
-        
-        full_prompt = self.qa_prompt.format(
-            context=context,
-            question=enhanced_query
-        )
-
-        recommendation = self.generator(
-            full_prompt,
-            max_length=400,  # Controlled length for more focused responses
-            temperature=0.7   # Balanced creativity and consistency
-        )
-        
-        # Post-process the response to ensure formatting
-        if not recommendation.startswith("SCENE DESCRIPTION:"):
-            recommendation = self._format_response(recommendation)
-        
-        return {
-            "recommendation": recommendation,
-            "query_analysis": query_aspects
+def chatbot():
+    palettes = {
+        "calm": {
+            "Primary Colors": ["Soft Blue", "Muted Navy"],
+            "Accent Colors": ["Deep Blue", "Off-White", "Soft Red"],
+            "Rationale": "Blue tones evoke tranquility and peace, while a touch of red adds warmth without being overwhelming."
+        },
+        "warm": {
+            "Primary Colors": ["Peach", "Coral Red"],
+            "Accent Colors": ["Golden Yellow", "Fresh Green", "Deep Blue"],
+            "Rationale": "These colors convey coziness and joy, making them perfect for homey or festive environments."
+        },
+        "cool": {
+            "Primary Colors": ["Deep Blue", "Teal"],
+            "Accent Colors": ["Ice Blue", "Soft Cyan", "Seafoam Green"],
+            "Rationale": "Cool shades symbolize freshness, relaxation, and clarity, ideal for modern aesthetics."
+        },
+        "nature": {
+            "Primary Colors": ["Olive Green", "Earthy Brown"],
+            "Accent Colors": ["Soft Cream", "Warm Sand", "Burnt Orange"],
+            "Rationale": "Inspired by forests and natural landscapes, these colors bring a grounded, organic feel."
+        },
+        "sunset": {
+            "Primary Colors": ["Orange", "Golden Yellow"],
+            "Accent Colors": ["Soft Yellow", "Teal Green", "Sunset Pink"],
+            "Rationale": "These hues mimic a setting sun, evoking warmth, romance, and adventure."
+        },
+        "ocean": {
+            "Primary Colors": ["Deep Navy", "Ocean Blue"],
+            "Accent Colors": ["Aqua Blue", "Soft Cyan", "Sky Blue"],
+            "Rationale": "Reflecting the sea, these colors convey freedom, calmness, and vastness."
+        },
+        "vibrant": {
+            "Primary Colors": ["Magenta", "Electric Purple"],
+            "Accent Colors": ["Deep Violet", "Neon Purple", "Intense Indigo"],
+            "Rationale": "Bold and high-energy, ideal for making strong, confident statements."
+        },
+        "pastel": {
+            "Primary Colors": ["Soft Pink", "Lavender"],
+            "Accent Colors": ["Lilac", "Baby Purple", "Blush Pink"],
+            "Rationale": "Light and airy pastels convey gentleness, innocence, and dreamlike aesthetics."
+        },
+        "mystical": {
+            "Primary Colors": ["Deep Purple", "Midnight Blue"],
+            "Accent Colors": ["Amethyst", "Silver", "Dark Teal"],
+            "Rationale": "These colors evoke mystery and fantasy, perfect for a dreamy or magical setting."
+        },
+        "futuristic": {
+            "Primary Colors": ["Neon Blue", "Metallic Silver"],
+            "Accent Colors": ["Electric Green", "Cyber Purple", "Holographic White"],
+            "Rationale": "Inspired by sci-fi aesthetics, these colors symbolize innovation and cutting-edge technology."
+        },
+        "retro": {
+            "Primary Colors": ["Mustard Yellow", "Burnt Orange"],
+            "Accent Colors": ["Vintage Green", "Rust Red", "Muted Teal"],
+            "Rationale": "A nostalgic throwback to the 70s and 80s, combining warm and funky tones."
+        },
+        "horror": {
+            "Primary Colors": ["Blood Red", "Black"],
+            "Accent Colors": ["Dark Gray", "Deep Purple", "Bone White"],
+            "Rationale": "Dark and eerie colors create a chilling, unsettling atmosphere perfect for horror settings."
+        },
+        "fantasy": {
+            "Primary Colors": ["Royal Blue", "Golden Yellow"],
+            "Accent Colors": ["Emerald Green", "Mystic Purple", "Silvery Gray"],
+            "Rationale": "Inspired by magical realms, these colors add a sense of wonder and adventure."
+        },
+        "cyberpunk": {
+            "Primary Colors": ["Neon Pink", "Electric Blue"],
+            "Accent Colors": ["Cyber Yellow", "Deep Purple", "Glowing Orange"],
+            "Rationale": "High-contrast neon tones create a futuristic and edgy cyberpunk aesthetic."
+        },
+        "gothic": {
+            "Primary Colors": ["Deep Black", "Crimson Red"],
+            "Accent Colors": ["Dark Violet", "Silver", "Shadow Gray"],
+            "Rationale": "Dark, dramatic colors reflect gothic elegance and mystery."
+        },
+        "desert": {
+            "Primary Colors": ["Terracotta", "Sand Beige"],
+            "Accent Colors": ["Cactus Green", "Sunbaked Orange", "Clear Sky Blue"],
+            "Rationale": "Arid desert landscapes with intense sun and sparse vegetation create a warm, earthy palette."
+        },
+        "tropical": {
+            "Primary Colors": ["Jungle Green", "Vibrant Turquoise"],
+            "Accent Colors": ["Coral Pink", "Pineapple Yellow", "Hibiscus Red"],
+            "Rationale": "Inspired by lush rainforests and tropical beaches, these bright, saturated colors evoke paradise."
+        },
+        "winter": {
+            "Primary Colors": ["Snow White", "Ice Blue"],
+            "Accent Colors": ["Pine Green", "Silver Gray", "Berry Red"],
+            "Rationale": "Cold, crisp colors of winter landscapes balanced with warm accents for a cozy feel."
+        },
+        "autumn": {
+            "Primary Colors": ["Maple Red", "Pumpkin Orange"],
+            "Accent Colors": ["Golden Yellow", "Forest Green", "Deep Brown"],
+            "Rationale": "The rich, warm tones of fall foliage create a cozy and inviting atmosphere."
+        },
+        "spring": {
+            "Primary Colors": ["Cherry Blossom Pink", "Fresh Green"],
+            "Accent Colors": ["Daffodil Yellow", "Lavender Purple", "Sky Blue"],
+            "Rationale": "Representing new growth and renewal with soft, bright colors full of life and energy."
+        },
+        "minimalist": {
+            "Primary Colors": ["Clean White", "Charcoal Gray"],
+            "Accent Colors": ["Soft Black", "Beige", "Muted Blue"],
+            "Rationale": "Simple, understated colors focusing on neutrals with subtle accents for a clean, modern look."
+        },
+        "rustic": {
+            "Primary Colors": ["Barn Red", "Weathered Wood Brown"],
+            "Accent Colors": ["Mossy Green", "Stone Gray", "Butter Yellow"],
+            "Rationale": "Worn, natural colors that evoke countryside charm and traditional craftsmanship."
+        },
+        "industrial": {
+            "Primary Colors": ["Concrete Gray", "Steel Blue"],
+            "Accent Colors": ["Rust Orange", "Factory Black", "Copper Brown"],
+            "Rationale": "Raw, utilitarian colors inspired by factories and urban environments with exposed materials."
+        },
+        "ethereal": {
+            "Primary Colors": ["Misty White", "Pearl Gray"],
+            "Accent Colors": ["Iridescent Blue", "Opal Pink", "Gossamer Purple"],
+            "Rationale": "Delicate, translucent colors creating a dreamlike, otherworldly atmosphere."
+        },
+        "elegant": {
+            "Primary Colors": ["Rich Burgundy", "Navy Blue"],
+            "Accent Colors": ["Gold", "Cream", "Emerald Green"],
+            "Rationale": "Sophisticated, luxurious tones that convey refinement and timeless style."
+        },
+        "bohemian": {
+            "Primary Colors": ["Terracotta", "Mustard Yellow"],
+            "Accent Colors": ["Peacock Blue", "Spice Orange", "Plant Green"],
+            "Rationale": "Eclectic, free-spirited colors inspired by global patterns and natural dyes."
+        },
+        "monochrome": {
+            "Primary Colors": ["Deep Black", "Soft Gray"],
+            "Accent Colors": ["Charcoal", "Silver", "Pure White"],
+            "Rationale": "A sophisticated palette using only variations of a single color for subtle depth and contrast."
+        },
+        "neon": {
+            "Primary Colors": ["Hot Pink", "Lime Green"],
+            "Accent Colors": ["Electric Blue", "Bright Yellow", "Neon Orange"],
+            "Rationale": "Ultra-bright, high-intensity colors that grab attention and create visual energy."
+        },
+        "vintage": {
+            "Primary Colors": ["Faded Denim", "Dusty Rose"],
+            "Accent Colors": ["Antique Gold", "Washed Green", "Muted Burgundy"],
+            "Rationale": "Weathered, softened colors with a nostalgic feel reminiscent of bygone eras."
+        },
+        "space": {
+            "Primary Colors": ["Deep Space Black", "Nebula Purple"],
+            "Accent Colors": ["Star White", "Galaxy Blue", "Asteroid Gray"],
+            "Rationale": "Cosmic colors inspired by the mysteries of the universe and celestial bodies."
+        },
+        "underwater": {
+            "Primary Colors": ["Deep Sea Blue", "Algae Green"],
+            "Accent Colors": ["Coral Orange", "Pearl White", "Anemone Pink"],
+            "Rationale": "Submerged colors that capture the mysterious, filtered light of ocean depths."
+        },
+        "candy": {
+            "Primary Colors": ["Bubblegum Pink", "Cotton Candy Blue"],
+            "Accent Colors": ["Lollipop Red", "Lime Green", "Lemon Yellow"],
+            "Rationale": "Sweet, playful colors inspired by confectionery that create a fun, cheerful mood."
+        },
+        "steampunk": {
+            "Primary Colors": ["Aged Brass", "Mahogany Brown"],
+            "Accent Colors": ["Copper Orange", "Steam White", "Leather Tan"],
+            "Rationale": "Victorian-era machinery colors with metallic tones and warm woods for retro-futuristic style."
+        },
+        "fairy tale": {
+            "Primary Colors": ["Enchanted Purple", "Magic Blue"],
+            "Accent Colors": ["Storybook Red", "Fairy Dust Gold", "Forest Green"],
+            "Rationale": "Whimsical colors that transport to magical kingdoms and enchanted forests."
+        },
+        # Romantic color palettes
+        "romantic": {
+            "Primary Colors": ["Rose Pink", "Soft Red"],
+            "Accent Colors": ["Blush", "Pearl White", "Deep Burgundy"],
+            "Rationale": "Classic romantic colors that evoke passion, tenderness, and affection."
+        },
+        "valentine": {
+            "Primary Colors": ["Ruby Red", "Soft Pink"],
+            "Accent Colors": ["Rose Gold", "Marsala", "Cream White"],
+            "Rationale": "Traditional valentine colors symbolizing love and devotion with elegant metallic accents."
+        },
+        "candlelight": {
+            "Primary Colors": ["Amber Gold", "Warm Ivory"],
+            "Accent Colors": ["Honey Yellow", "Chocolate Brown", "Burgundy"],
+            "Rationale": "The warm, intimate glow of candlelight creates a cozy, romantic atmosphere."
+        },
+        "cherry blossom": {
+            "Primary Colors": ["Pale Pink", "White"],
+            "Accent Colors": ["Cherry Pink", "Sage Green", "Lavender"],
+            "Rationale": "Inspired by the ephemeral beauty of spring cherry blossoms, symbolizing romance and renewal."
+        },
+        "paris": {
+            "Primary Colors": ["French Blue", "Soft Cream"],
+            "Accent Colors": ["Eiffel Tower Gray", "Café Brown", "Blush Pink"],
+            "Rationale": "The city of love inspires this palette of elegant, timeless Parisian colors."
+        },
+        "vintage romance": {
+            "Primary Colors": ["Dusty Rose", "Antique Ivory"],
+            "Accent Colors": ["Faded Lavender", "Muted Sage", "Tea-Stained Beige"],
+            "Rationale": "Nostalgic, softened hues that evoke the romance of bygone eras."
+        },
+        "midnight romance": {
+            "Primary Colors": ["Deep Navy", "Plum Purple"],
+            "Accent Colors": ["Silver", "Burgundy", "Midnight Blue"],
+            "Rationale": "Dramatic, sophisticated dark tones create an intimate, mysterious romantic ambiance."
+        },
+        "rose garden": {
+            "Primary Colors": ["Garden Green", "Rose Pink"],
+            "Accent Colors": ["Thorn Brown", "Petal Red", "Morning Dew White"],
+            "Rationale": "The classic symbol of romance—roses in a garden setting—inspires this natural palette."
+        },
+        "sweetheart": {
+            "Primary Colors": ["Candy Pink", "Soft Coral"],
+            "Accent Colors": ["Heart Red", "Cream", "Light Mauve"],
+            "Rationale": "Playful, sweet colors that evoke the light-hearted side of romance and affection."
+        },
+        "star-crossed": {
+            "Primary Colors": ["Twilight Blue", "Starlight Silver"],
+            "Accent Colors": ["Cosmic Purple", "Dream Blue", "Celestial White"],
+            "Rationale": "Inspired by romantic tales of lovers destined by the stars, creating a dreamy, cosmic feel."
+        },
+        "ballroom": {
+            "Primary Colors": ["Champagne Gold", "Velvet Red"],
+            "Accent Colors": ["Crystal White", "Chandelier Gold", "Piano Black"],
+            "Rationale": "Elegant, opulent colors reminiscent of grand ballrooms and classical romance."
+        },
+        "secret garden": {
+            "Primary Colors": ["Hidden Green", "Misty Mauve"],
+            "Accent Colors": ["Stone Gray", "Secret Blue", "Wild Rose Pink"],
+            "Rationale": "Mysterious and enchanted, evoking the romance of a secluded garden sanctuary."
         }
+    }
     
-    def _format_response(self, response: str) -> str:
-        """Ensure response follows the expected format even if the model deviates"""
-        if not response or response.isspace():
-            return "Error: Could not generate a valid response."
-            
-        formatted = """SCENE DESCRIPTION:
-A thoughtful figure sits alone on a balcony, contemplating the world below. The air feels heavy with emotion, creating an atmosphere of quiet introspection.
-
-SUGGESTED PALETTE:
-
-Primary Colors:
-1. Deep Navy Blue - Creates a sense of depth and melancholy while maintaining sophistication
-2. Soft Gray - Reflects the contemplative mood and provides a neutral foundation
-3. Muted Purple - Adds a touch of emotional complexity and introspective feeling
-
-Accent Colors:
-1. Pale Silver - Catches subtle light and adds a gentle shimmer to the scene
-2. Dark Teal - Provides richness and anchors the emotional weight of the scene
-
-RATIONALE:
-This palette combines cool, introspective tones that mirror the melancholic mood while maintaining visual interest. The deep blues and purples create emotional depth, while the metallic accents suggest hope and reflection, perfect for a contemplative balcony scene."""
-        
-        return formatted
-
-    def _analyze_query(self, query: str) -> dict:
-        aspects = {
-            "emotions": [],
-            "context": None,
-            "time_of_day": None,
-            "weather": None,
-            "complexity": "simple"
-        }
-        
-        emotion_keywords = ["melancholic", "sad", "peaceful", "contemplative", "lonely", "quiet", "thoughtful"]
-        context_keywords = ["balcony", "indoor", "outdoor", "urban", "residential"]
-        time_keywords = ["dawn", "morning", "noon", "afternoon", "dusk", "night"]
-        weather_keywords = ["sunny", "rainy", "cloudy", "stormy", "clear"]
-        
-        aspects["emotions"] = [w for w in emotion_keywords if w in query.lower()]
-        
-        for context in context_keywords:
-            if context in query.lower():
-                aspects["context"] = context
-                
-        for time in time_keywords:
-            if time in query.lower():
-                aspects["time_of_day"] = time
-                
-        for weather in weather_keywords:
-            if weather in query.lower():
-                aspects["weather"] = weather
-        
-        return aspects
-    
-    def _enhance_query(self, original_query: str, aspects: dict) -> str:
-        query_elements = [original_query]
-        
-        if aspects["emotions"]:
-            query_elements.append(f"The mood is {' and '.join(aspects['emotions'])}")
-        if aspects["time_of_day"]:
-            query_elements.append(f"The time is {aspects['time_of_day']}")
-        if aspects["weather"]:
-            query_elements.append(f"The weather is {aspects['weather']}")
-            
-        return " ".join(query_elements)
-
-def main():
-    rag = EnhancedColorPaletteRAG()
-    
-    json_files = [
-        "complete-color-palette-training.json",
-        "complete-color-palette-training-part2.json",
-        "complete-color-palette-training-part3.json",
-        "complete-color-palette-training-part4.json"
-    ]
-    
-    try:
-        rag.initialize_from_json(json_files)
-    except Exception as e:
-        print(f"Error during initialization: {e}")
-        return
-
-    chat_history = []
-    
-    print("Welcome to the Enhanced Color Palette Advisor!")
-    print("Describe a scene, mood, or setting, and I'll suggest a detailed color palette with rationale.")
-    print("Type 'quit' to exit.")
+    index, descriptions, model = create_index(palettes)
+    print("Welcome to the Color Palette Advisor!")
+    print("I can suggest color palettes based on your mood, theme, or scene.")
+    print("Type 'list' to see all available palettes.")
+    print("Type 'random' for a surprise palette.")
+    print("Type 'exit' to quit.")
     
     while True:
-        try:
-            user_query = input("\nDescribe your scene or mood: ").strip()
-            
-            if user_query.lower() in ['quit', 'exit', 'bye']:
-                print("Thank you for using the Enhanced Color Palette Advisor. Goodbye!")
-                break
-            
-            if not user_query:
-                print("Please enter a description or type 'quit' to exit.")
-                continue
-            
-            result = rag.get_recommendation(user_query, chat_history)
-            print("\n=== Color Palette Recommendation ===")
-            print(result["recommendation"])
-            print("\n")
-            
-            chat_history.append((user_query, result["recommendation"]))
-            
-        except KeyboardInterrupt:
-            print("\nExiting gracefully...")
+        user_input = input("\nEnter a mood or scene: ").strip().lower()
+        
+        if user_input == 'exit':
+            print("Thank you for using Color Palette Advisor. Goodbye!")
             break
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            print("Please try again or type 'quit' to exit.")
+            
+        elif user_input == 'list':
+            print("\nAvailable palette themes:")
+            themes = sorted(list(palettes.keys()))
+            # Print in columns for better readability
+            columns = 4
+            for i in range(0, len(themes), columns):
+                row = themes[i:i+columns]
+                print("  ".join(f"{theme}" for theme in row))
+            continue
+            
+        elif user_input == 'random':
+            random_theme = random.choice(list(palettes.keys()))
+            print(f"\nRandom palette: '{random_theme}'")
+            palette = palettes[random_theme]
+            print_palette(random_theme, palette)
+            continue
+        
+        # Get multiple results for more options
+        results = get_color_palette(user_input, index, descriptions, model, palettes, num_results=3)
+        
+        print(f"\nTop matches for '{user_input}':\n")
+        for i, (theme, palette, similarity) in enumerate(results):
+            print(f"Match #{i+1}: '{theme}' (Similarity: {similarity:.2f})")
+            print_palette(theme, palette)
+            if i < len(results) - 1:
+                print("-" * 50)
+
+def print_palette(theme, palette):
+    """Helper function to print palette details consistently"""
+    print(f"Primary Colors: {', '.join(palette['Primary Colors'])}")
+    print(f"Accent Colors: {', '.join(palette['Accent Colors'])}")
+    print(f"Rationale: {palette['Rationale']}")
+    
+    # Display hex codes for better implementation (mock function)
+    print("Sample Color Codes:")
+    for color_type in ["Primary Colors", "Accent Colors"]:
+        for color in palette[color_type]:
+            # This is a mock function - in a real implementation, you would map
+            # color names to actual hex codes from a predefined dictionary
+            hex_code = mock_color_to_hex(color)
+            print(f"  {color}: {hex_code}")
+
+def mock_color_to_hex(color_name):
+    """Mock function to simulate converting color names to hex codes"""
+    # In a real implementation, this would be a dictionary mapping color names to actual hex codes
+    # This is just a simplified demonstration
+    color_hash = hash(color_name) % 0xFFFFFF
+    return f"#{color_hash:06X}"
 
 if __name__ == "__main__":
-    main()
+    chatbot()
