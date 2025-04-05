@@ -5,6 +5,7 @@ from camera import capture_video
 from color_palette_analysis import analyze_emotion
 from face_detection import detect_faces
 from framing_analysis import analyze_framing
+from scene_analysis import analyze_scene
 
 # Initialize the camera feed
 cap = capture_video()
@@ -26,7 +27,13 @@ while True:
     frame = detect_faces(frame)
     
     # Perform framing analysis
-    
+    result_text, analyzed_frame = analyze_scene(frame)
+
+    # Overlay result text
+    cv2.putText(analyzed_frame, result_text, (10, 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+
+    cv2.imshow("Scene Analysis", analyzed_frame)
 
     # Color/emotion analysis every 10 seconds
     current_time = time.time()
