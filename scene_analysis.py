@@ -5,7 +5,8 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 
 import os
 # Load YOLOv5 model
-model_path = os.path.join(os.path.dirname(__file__), 'yolov5s.pt')
+# Priority: YOLO_MODEL_PATH env var, then fallback to local path
+model_path = os.getenv('YOLO_MODEL_PATH', '/Users/vedantdesai/CineMind/yolov5s.pt')
 model = torch.hub.load('ultralytics/yolov5', 'custom', path=model_path, force_reload=False)
 
 # Define unwanted objects (these are typical clutter items in a frame)

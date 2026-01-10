@@ -7,12 +7,15 @@ class FaceDetector:
     
     def __init__(self, model_path=None):
         """Initialize the YOLO face detector"""
-        # Load YOLOv5 model
-        if model_path is None:
+        import os
+        # Priority: 1. Passed argument, 2. Environment variable, 3. Torch Hub
+        custom_path = model_path or os.getenv('YOLO_MODEL_PATH')
+        
+        if custom_path and os.path.exists(custom_path):
+            self.model = torch.hub.load('ultralytics/yolov5', 'custom', path=custom_path, force_reload=False)
+        else:
             # If no custom model provided, load from torch hub
             self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
-        else:
-            self.model = torch.load(model_path)
         
         # Set model parameters
         self.model.conf = 0.5  # Confidence threshold
