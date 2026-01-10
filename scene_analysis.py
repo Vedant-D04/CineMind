@@ -5,9 +5,15 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 
 import os
 # Load YOLOv5 model
-# Priority: YOLO_MODEL_PATH env var, then fallback to local path
-model_path = os.getenv('YOLO_MODEL_PATH', '/Users/vedantdesai/CineMind/yolov5s.pt')
-model = torch.hub.load('ultralytics/yolov5', 'custom', path=model_path, force_reload=False)
+# Priority: YOLO_MODEL_PATH env var, then local file, then download from hub
+model_path = os.getenv('YOLO_MODEL_PATH', os.path.join(os.path.dirname(__file__), 'yolov5s.pt'))
+
+if os.path.exists(model_path):
+    model = torch.hub.load('ultralytics/yolov5', 'custom', path=model_path, force_reload=False)
+else:
+    # If the file is missing, download the standard s version from hub
+    print(f"Model file not found at {model_path}. Downloading from Torch Hub...")
+    model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
 
 # Define unwanted objects (these are typical clutter items in a frame)
 UNWANTED_OBJECTS = [
