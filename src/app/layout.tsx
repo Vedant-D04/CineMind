@@ -13,7 +13,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body>
+            <body suppressHydrationWarning>
                 <div className="cinematic-bg"></div>
                 {children}
             </body>

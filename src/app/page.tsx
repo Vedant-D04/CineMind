@@ -1,19 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import LandingPage from "@/components/LandingPage";
-import Workflow from "@/components/Workflow";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
-    const [page, setPage] = useState<"landing" | "workflow">("landing");
+    const router = useRouter();
 
     return (
         <main>
-            {page === "landing" ? (
-                <LandingPage onStart={() => setPage("workflow")} />
-            ) : (
-                <Workflow onBack={() => setPage("landing")} />
-            )}
+            <LandingPage onStart={() => router.push("/dashboard")} />
         </main>
     );
 }

@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import CameraFeed from "./CameraFeed";
 import Chat from "./Chat";
 import { ColorPalette, Framing } from "./AnalysisTools";
 import { SceneAnalysis, Settings } from "./ExtraTools";
+import Tutorial from "./Tutorial";
 
 interface WorkflowProps {
     onBack: () => void;
@@ -15,18 +16,22 @@ export type PanelType = "camera" | "chat" | "color" | "framing" | "scene" | "set
 
 export default function Workflow({ onBack }: WorkflowProps) {
     const [activePanel, setActivePanel] = useState<PanelType>("camera");
+    const [analysisResults, setAnalysisResults] = useState<any>(null);
+    const [showTutorial, setShowTutorial] = useState(false);
 
-    const renderPanel = () => {
-        switch (activePanel) {
-            case "camera": return <CameraFeed />;
-            case "chat": return <Chat />;
-            case "color": return <ColorPalette />;
-            case "framing": return <Framing />;
-            case "scene": return <SceneAnalysis />;
-            case "settings": return <Settings />;
-            default: return <CameraFeed />;
+    useEffect(() => {
+        // Register global trigger for sidebar button
+        (window as any).startTutorial = () => setShowTutorial(true);
+
+        // Auto-show tutorial for first-time users
+        const hasSeenTutorial = localStorage.getItem('cinemind-tutorial-seen');
+        if (!hasSeenTutorial) {
+            setTimeout(() => setShowTutorial(true), 1000);
         }
-    };
+
+        return () => { delete (window as any).startTutorial; };
+    }, []);
+
 
     return (
         <div id="workflow-page" className="page active">
@@ -41,16 +46,16 @@ export default function Workflow({ onBack }: WorkflowProps) {
                     {/* Shared workspace (Camera & Stats) is hidden for Chat and Settings in original JS */}
                     {activePanel !== "chat" && activePanel !== "settings" && (
                         <div className="shared-workspace">
-                            <CameraFeed />
+                            <CameraFeed onResults={setAnalysisResults} results={analysisResults} />
                         </div>
                     )}
 
                     <div className="tool-panels">
                         {activePanel === "chat" && <Chat />}
                         {activePanel === "settings" && <Settings />}
-                        {activePanel === "color" && <ColorPalette />}
-                        {activePanel === "framing" && <Framing />}
-                        {activePanel === "scene" && <SceneAnalysis />}
+                        {activePanel === "color" && <ColorPalette results={analysisResults?.color_analysis} />}
+                        {activePanel === "framing" && <Framing results={analysisResults?.framing} />}
+                        {activePanel === "scene" && <SceneAnalysis results={analysisResults?.scene} />}
                         {activePanel === "camera" && (
                             <div className="content-panel active">
                                 <div className="overview-box">
@@ -62,6 +67,7 @@ export default function Workflow({ onBack }: WorkflowProps) {
                     </div>
                 </main>
             </div>
+            {showTutorial && <Tutorial onFinish={() => setShowTutorial(false)} />}
         </div>
     );
 }
