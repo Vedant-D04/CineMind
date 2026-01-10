@@ -1449,7 +1449,7 @@ h6 {
     content: '';
     position: absolute;
     inset: 0;
-    background-image: url('assets/chat_bg.png');
+    background-image: url('/assets/chat_bg.png');
     background-size: 400px;
     opacity: 0.15;
     z-index: -1;
