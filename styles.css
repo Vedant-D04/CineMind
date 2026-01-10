@@ -2,21 +2,21 @@
    CSS Variables & Reset
    =========================== */
 :root {
-    /* Colors */
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    /* Colors - Black & Yellow Cinematic Theme */
+    --primary-gradient: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    --secondary-gradient: linear-gradient(135deg, #1a1a1a 0%, #333333 100%);
+    --accent-gradient: linear-gradient(135deg, #FFD700 0%, #E6C200 100%);
 
-    --primary-color: #667eea;
-    --primary-dark: #5568d3;
-    --secondary-color: #764ba2;
-    --accent-color: #4facfe;
+    --primary-color: #FFD700;
+    --primary-dark: #FFC107;
+    --secondary-color: #1a1a1a;
+    --accent-color: #FFD700;
 
-    --bg-primary: #0a0e27;
-    --bg-secondary: #141932;
-    --bg-tertiary: #1e2442;
-    --bg-card: rgba(255, 255, 255, 0.05);
-    --bg-hover: rgba(255, 255, 255, 0.08);
+    --bg-primary: #050505;
+    --bg-secondary: #0a0a0a;
+    --bg-tertiary: #111111;
+    --bg-card: rgba(0, 0, 0, 0.6);
+    --bg-hover: rgba(255, 215, 0, 0.1);
 
     --text-primary: #ffffff;
     --text-secondary: rgba(255, 255, 255, 0.7);
@@ -505,10 +505,20 @@ h6 {
 }
 
 .btn-secondary {
-    background: var(--bg-card);
+    background: transparent;
     color: var(--text-primary);
     border: 1px solid var(--border-color);
-    backdrop-filter: blur(10px);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
 }
 
 .btn-secondary:hover {
@@ -522,8 +532,11 @@ h6 {
 }
 
 .btn-large {
-    padding: var(--spacing-lg) var(--spacing-2xl);
-    font-size: 1.125rem;
+    padding: 0.8rem 2rem;
+    /* Reduced padding from 1rem 2.5rem */
+    font-size: 1.1rem;
+    height: auto;
+    /* Ensure no fixed height causes weirdness */
 }
 
 .icon-btn {
@@ -962,15 +975,30 @@ h6 {
 }
 
 .stat-label {
-    font-size: 0.875rem;
+    font-size: 1.25rem;
     color: var(--text-secondary);
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-xl);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-.stat-value {
-    font-size: 1.75rem;
-    font-weight: 700;
+.hero-tribute {
     font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.1rem;
+    color: var(--primary-color);
+    font-style: italic;
+    margin-bottom: var(--spacing-lg);
+    opacity: 0.9;
+}
+
+.ai-avatar-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary-color);
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
 }
 
 /* Analysis Content */
@@ -1397,32 +1425,67 @@ h6 {
     flex-direction: column;
     height: 100%;
     min-height: 500px;
-    background: var(--bg-card);
+    background: rgba(10, 10, 10, 0.85);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-xl);
     overflow: hidden;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    /* Animated Pattern Background */
+    position: relative;
+    z-index: 1;
+}
+
+.chat-interface::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('assets/chat_bg.png');
+    background-size: 400px;
+    opacity: 0.15;
+    z-index: -1;
+    animation: chatBgScroll 40s linear infinite;
+}
+
+@keyframes chatBgScroll {
+    0% {
+        background-position: 0 0;
+    }
+
+    100% {
+        background-position: 400px 400px;
+    }
 }
 
 .chat-header {
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
-    padding: var(--spacing-lg);
-    background: var(--bg-tertiary);
     border-bottom: 1px solid var(--border-color);
+    backdrop-filter: blur(4px);
 }
 
-.ai-avatar {
+.ai-avatar-img-container {
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
     border-radius: 50%;
+    overflow: hidden;
+    background: #fff;
+    /* White bg for sketch */
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
-    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+    border: 2px solid var(--primary-color);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
 }
+
+.ai-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Old avatar style removed */
 
 .ai-info h3 {
     margin: 0;
@@ -1625,7 +1688,7 @@ h6 {
 .tutorial-backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(4px);
 }
 
@@ -1633,7 +1696,7 @@ h6 {
     position: absolute;
     border: 3px solid var(--primary-color);
     border-radius: var(--radius-lg);
-    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.8), 0 0 30px rgba(102, 126, 234, 0.8);
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4), 0 0 30px rgba(102, 126, 234, 0.8);
     transition: all var(--transition-slow);
     pointer-events: none;
     z-index: 1001;
@@ -1652,6 +1715,7 @@ h6 {
 
 .tutorial-tooltip {
     position: absolute;
+    z-index: 1005;
     max-width: 400px;
     transition: all var(--transition-slow);
 }
@@ -1750,4 +1814,75 @@ h6 {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--border-hover);
+}
+
+/* ===========================
+   Visual Overhaul
+   =========================== */
+.cinematic-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-image: url('assets/movie_posters.png');
+    background-size: 800px;
+    background-repeat: repeat;
+    opacity: 0.45;
+    animation: scrollBg 60s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes scrollBg {
+    0% {
+        background-position: 0 0;
+    }
+
+    100% {
+        background-position: 800px 800px;
+    }
+}
+
+.cinematic-icons {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-lg);
+    margin: var(--spacing-lg) 0;
+    font-size: 2rem;
+}
+
+.cine-icon {
+    opacity: 0.8;
+    transition: transform 0.3s ease;
+    cursor: default;
+}
+
+.cine-icon:hover {
+    transform: scale(1.2) rotate(10deg);
+}
+
+.directors-showcase {
+    margin-top: var(--spacing-2xl);
+    text-align: center;
+    opacity: 0.4;
+    transition: opacity 0.5s ease;
+}
+
+.directors-showcase:hover {
+    opacity: 1;
+}
+
+.directors-showcase h3 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: var(--spacing-md);
+    color: var(--text-tertiary);
+}
+
+.directors-img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    filter: sepia(30%);
 }

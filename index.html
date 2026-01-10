@@ -16,6 +16,7 @@
 </head>
 
 <body>
+    <div class="cinematic-bg"></div>
     <!-- Landing Page -->
     <div id="landing-page" class="page active">
         <!-- Hero Section -->
@@ -58,24 +59,55 @@
                 <h1 class="hero-title">
                     Elevate Your <span class="gradient-text">Cinematography</span> with AI
                 </h1>
-                <p class="hero-description">
-                    Real-time intelligent analysis of your camera footage. Get instant feedback on framing, composition,
-                    emotions, and color palettes to create stunning visuals.
+                <p class="hero-description"
+                    style="max-width: 800px; font-size: 1rem; line-height: 1.6; text-align: justify;">
+                    This system is useful for film students, beginner cinematographers, independent filmmakers, and
+                    content creators who need real-time guidance during shooting without access to professional crews.
+                    Framing, lighting, and color palette analysis help users understand and apply core cinematography
+                    principles such as composition, illumination, and mood, while scene analysis provides contextual
+                    awareness to ensure visually appropriate decisions. The director chatbot further enhances usability
+                    by converting technical insights into clear, creative guidance inspired by professional directing
+                    practices. Together, these functions help users improve shot quality, emotional impact, and
+                    storytelling efficiency directly on set, making high-quality filmmaking more accessible and
+                    practical.
                 </p>
+
+                <div class="cinematic-icons">
+                    <span class="cine-icon" title="Camera">🎥</span>
+                    <span class="cine-icon" title="Lighting">💡</span>
+                    <span class="cine-icon" title="Film Roll">🎞️</span>
+                </div>
+
                 <div class="hero-cta">
-                    <button id="get-started-btn" class="btn btn-primary">
-                        <span>Get Started</span>
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                    </button>
-                    <button id="watch-demo-btn" class="btn btn-secondary">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                            <path d="M8 5L14 10L8 15V5Z" fill="currentColor" />
-                        </svg>
-                        <span>Watch Demo</span>
-                    </button>
+                    <div class="cta-buttons"
+                        style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 2rem;">
+                        <button id="get-started-btn" class="btn btn-primary"
+                            style="padding: 0.6rem 1.5rem; font-size: 1rem;">
+                            <span>Get Started</span>
+                            <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                                <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </button>
+                        <button id="watch-demo-btn" class="btn btn-secondary"
+                            style="padding: 0.6rem 1.5rem; font-size: 1rem;">
+                            <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                                <path d="M8 5L14 10L8 15V5Z" fill="currentColor" />
+                            </svg>
+                            <span class="btn-text">Watch Demo</span>
+                        </button>
+                    </div>
+
+                    <div class="directors-showcase" style="margin-top: 1rem;">
+                        <h3>Legendary Inspiration</h3>
+                        <p class="ray-works"
+                            style="color: var(--primary-color); font-size: 0.9rem; margin-bottom: 0.5rem; font-style: italic;">
+                            Celebrating the legacy of Satyajit Ray<br>
+                            <span style="opacity: 0.8; font-size: 0.8em;">(Pather Panchali • Charulata • The Big
+                                City)</span>
+                        </p>
+                        <img src="assets/directors.png" alt="Famous Directors" class="directors-img">
+                    </div>
                 </div>
             </div>
 
@@ -366,7 +398,7 @@
                                     d="M6 9H8M12 9H14M10 13C10 13 9 12 8 12C7 12 6 13 6 13M10 13C10 13 11 12 12 12C13 12 14 13 14 13"
                                     stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
                             </svg>
-                            <span>AI Director</span>
+                            <span>Ray AI</span>
                         </button>
                         <button class="nav-item" data-panel="color">
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -497,9 +529,11 @@
                     <div id="chat-panel" class="content-panel">
                         <div class="chat-interface">
                             <div class="chat-header">
-                                <div class="ai-avatar">🎬</div>
+                                <div class="ai-avatar-img-container">
+                                    <img src="assets/ray_sketch.png" alt="Satyajit Ray" class="ai-avatar-img">
+                                </div>
                                 <div class="ai-info">
-                                    <h3>AI Director</h3>
+                                    <h3>Ray AI</h3>
                                     <p>Cinematography & Scene Design Assistant</p>
                                 </div>
                             </div>
@@ -507,8 +541,9 @@
                             <div class="chat-messages" id="chat-messages">
                                 <div class="message bot-message">
                                     <div class="message-content">
-                                        <p>Hello! I'm your AI Director. Tell me about the scene you want to film, or ask
-                                            for advice on lighting and composition.</p>
+                                        <p>Hello! I'm Ray, your cinematic assistant. Inspired by the masters, I'm here
+                                            to help
+                                            you craft your scene.</p>
                                     </div>
                                 </div>
                             </div>

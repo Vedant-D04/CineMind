@@ -66,9 +66,18 @@ navItems.forEach(item => {
         // Update workspace header
         document.getElementById('workspace-title').textContent = `Analysis Mode: ${panelName}`;
 
+        // Toggle Workspace Visibility for Lumière AI (Chat)
+        const sharedWorkspace = document.querySelector('.shared-workspace');
+        if (panelId === 'chat') {
+            sharedWorkspace.style.display = 'none';
+        } else {
+            sharedWorkspace.style.display = 'flex'; // Restore flex layout
+        }
+
         // Update subtitle based on tool
         const subtitles = {
             'camera': 'Live video feed from your camera',
+            'chat': 'Cinematography & Scene Design Assistant',
             'emotion': 'Real-time facial emotion detection',
             'color': 'Mood-based color suggestions',
             'framing': 'Composition and framing guidelines',
