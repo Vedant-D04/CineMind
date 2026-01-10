@@ -1,26 +1,8 @@
+# Removed .pth model usage for lighter deployment
+# Emotion recognition is now bypassed or passed as a preference
+
 import cv2
-import torch
-import torchvision.transforms as transforms
-from PIL import Image
 import numpy as np
-from FER import DeepCNN
-
-import os
-# Load the pre-trained model
-model_path = os.path.join(os.path.dirname(__file__), 'v1_93.3.pth')
-model = DeepCNN(input_channels=1, num_classes=7)  # Initialize the model architecture
-model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
-model.eval()  # Set model to evaluation mode
-
-# Load OpenCV's Haar cascade for face detection
-face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-
-# Define image transformations
-transform = transforms.Compose([
-    transforms.Grayscale(num_output_channels=1),  # Convert to grayscale
-    transforms.Resize((48, 48)),  # Resize to match model input size
-    transforms.ToTensor(),
-])
 
 # Define emotion labels and associated scene types
 emotion_labels = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
@@ -34,28 +16,12 @@ emotion_scene_types = {
     'neutral': 'Balanced/Natural'
 }
 
-def analyze_emotion(frame, prefetched_emotion=None):
+def analyze_emotion(frame, prefetched_emotion='neutral'):
     """
-    Analyzes emotion and then color palette.
-    Prefetched_emotion can be passed to avoid re-detecting.
+    Analyzes the color palette. Prefetched_emotion can be passed; 
+    otherwise, it defaults to 'neutral'.
     """
-    emotion = prefetched_emotion
-    
-    if emotion is None:
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5, minSize=(30, 30))
-        emotion = "neutral" # Default
-        
-        for (x, y, w, h) in faces:
-            face = gray[y:y+h, x:x+w]
-            face_pil = Image.fromarray(face)
-            face_tensor = transform(face_pil).unsqueeze(0)
-            with torch.no_grad():
-                output = model(face_tensor)
-                predicted_index = torch.argmax(output, dim=1).item()
-                emotion = emotion_labels[predicted_index]
-            break # Just take the first one
-
+    emotion = prefetched_emotion or 'neutral'
     frame, suggestions = analyze_color_palette(frame, emotion)
     return frame, suggestions
 
