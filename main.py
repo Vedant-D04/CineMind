@@ -6,6 +6,8 @@ from color_palette_analysis import analyze_emotion
 from face_detection import detect_faces
 from framing_analysis import analyze_framing
 from scene_analysis import analyze_scene
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 # Initialize the camera feed
 cap = capture_video()

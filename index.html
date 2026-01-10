@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineMind - AI-Powered Film Assistant</title>
+    <meta name="description"
+        content="CineMind is an intelligent film assistant that provides real-time analysis of camera footage, including emotion detection, color palette suggestions, framing analysis, and scene composition.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Landing Page -->
+    <div id="landing-page" class="page active">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-background">
+                <div class="gradient-orb orb-1"></div>
+                <div class="gradient-orb orb-2"></div>
+                <div class="gradient-orb orb-3"></div>
+            </div>
+
+            <nav class="navbar">
+                <div class="nav-content">
+                    <div class="logo">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <rect width="32" height="32" rx="8" fill="url(#logo-gradient)" />
+                            <path d="M16 8L20 12L16 16L12 12L16 8Z" fill="white" opacity="0.9" />
+                            <path d="M16 16L20 20L16 24L12 20L16 16Z" fill="white" opacity="0.6" />
+                            <defs>
+                                <linearGradient id="logo-gradient" x1="0" y1="0" x2="32" y2="32">
+                                    <stop offset="0%" stop-color="#667eea" />
+                                    <stop offset="100%" stop-color="#764ba2" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <span>CineMind</span>
+                    </div>
+                    <div class="nav-links">
+                        <a href="#features" class="nav-link">Features</a>
+                        <a href="#how-it-works" class="nav-link">How It Works</a>
+                        <a href="#technology" class="nav-link">Technology</a>
+                    </div>
+                </div>
+            </nav>
+
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="badge-dot"></span>
+                    AI-Powered Film Assistant
+                </div>
+                <h1 class="hero-title">
+                    Elevate Your <span class="gradient-text">Cinematography</span> with AI
+                </h1>
+                <p class="hero-description">
+                    Real-time intelligent analysis of your camera footage. Get instant feedback on framing, composition,
+                    emotions, and color palettes to create stunning visuals.
+                </p>
+                <div class="hero-cta">
+                    <button id="get-started-btn" class="btn btn-primary">
+                        <span>Get Started</span>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                    <button id="watch-demo-btn" class="btn btn-secondary">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M8 5L14 10L8 15V5Z" fill="currentColor" />
+                        </svg>
+                        <span>Watch Demo</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="hero-visual">
+                <div class="camera-frame">
+                    <div class="frame-corner tl"></div>
+                    <div class="frame-corner tr"></div>
+                    <div class="frame-corner bl"></div>
+                    <div class="frame-corner br"></div>
+                    <div class="scan-line"></div>
+                    <div class="analysis-overlay">
+                        <div class="analysis-item" style="--delay: 0s">
+                            <div class="analysis-icon">😊</div>
+                            <span>Emotion: Happy</span>
+                        </div>
+                        <div class="analysis-item" style="--delay: 0.2s">
+                            <div class="analysis-icon">🎨</div>
+                            <span>Warm Palette</span>
+                        </div>
+                        <div class="analysis-item" style="--delay: 0.4s">
+                            <div class="analysis-icon">📐</div>
+                            <span>Rule of Thirds</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="features">
+            <div class="section-header">
+                <h2 class="section-title">Powerful Features</h2>
+                <p class="section-description">Everything you need to create professional-grade cinematography</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <circle cx="16" cy="12" r="5" stroke="currentColor" stroke-width="2" />
+                            <path d="M8 26C8 22 11 19 16 19C21 19 24 22 24 26" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" />
+                        </svg>
+                    </div>
+                    <h3>Face Detection</h3>
+                    <p>Advanced face detection with real-time tracking and bounding box visualization</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <circle cx="16" cy="16" r="10" stroke="currentColor" stroke-width="2" />
+                            <path d="M11 14C11 14 12 12 14 12C16 12 17 14 17 14" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" />
+                            <path d="M18 14C18 14 19 12 21 12C23 12 24 14 24 14" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" />
+                            <path d="M10 20C10 20 12 23 16 23C20 23 22 20 22 20" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" />
+                        </svg>
+                    </div>
+                    <h3>Emotion Analysis</h3>
+                    <p>AI-powered emotion recognition detecting happiness, sadness, anger, surprise, and more</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <rect x="6" y="6" width="8" height="8" rx="2" fill="currentColor" opacity="0.3" />
+                            <rect x="18" y="6" width="8" height="8" rx="2" fill="currentColor" opacity="0.6" />
+                            <rect x="6" y="18" width="8" height="8" rx="2" fill="currentColor" opacity="0.8" />
+                            <rect x="18" y="18" width="8" height="8" rx="2" fill="currentColor" />
+                        </svg>
+                    </div>
+                    <h3>Color Palette Analysis</h3>
+                    <p>Intelligent color analysis with mood-based palette suggestions for perfect atmosphere</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <rect x="4" y="4" width="24" height="24" rx="2" stroke="currentColor" stroke-width="2" />
+                            <line x1="14" y1="4" x2="14" y2="28" stroke="currentColor" stroke-width="1.5"
+                                stroke-dasharray="4 4" />
+                            <line x1="18" y1="4" x2="18" y2="28" stroke="currentColor" stroke-width="1.5"
+                                stroke-dasharray="4 4" />
+                            <line x1="4" y1="14" x2="28" y2="14" stroke="currentColor" stroke-width="1.5"
+                                stroke-dasharray="4 4" />
+                            <line x1="4" y1="18" x2="28" y2="18" stroke="currentColor" stroke-width="1.5"
+                                stroke-dasharray="4 4" />
+                        </svg>
+                    </div>
+                    <h3>Framing Analysis</h3>
+                    <p>Rule of thirds, headroom, and looking room analysis for perfect composition</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <path d="M16 4L4 10V16C4 23 16 28 16 28C16 28 28 23 28 16V10L16 4Z" stroke="currentColor"
+                                stroke-width="2" stroke-linejoin="round" />
+                            <path d="M12 16L15 19L21 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </div>
+                    <h3>Scene Analysis</h3>
+                    <p>Detect unwanted objects and background clutter to maintain clean, professional shots</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <circle cx="16" cy="16" r="12" stroke="currentColor" stroke-width="2" />
+                            <path d="M16 8V16L21 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                    </div>
+                    <h3>Real-time Feedback</h3>
+                    <p>Instant analysis and suggestions as you shoot, helping you capture the perfect frame</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section id="how-it-works" class="how-it-works">
+            <div class="section-header">
+                <h2 class="section-title">How It Works</h2>
+                <p class="section-description">Simple workflow, powerful results</p>
+            </div>
+
+            <div class="workflow-steps">
+                <div class="workflow-step">
+                    <div class="step-number">01</div>
+                    <div class="step-content">
+                        <h3>Connect Camera</h3>
+                        <p>Connect your camera or webcam to start capturing footage</p>
+                    </div>
+                    <div class="step-line"></div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-number">02</div>
+                    <div class="step-content">
+                        <h3>Real-time Analysis</h3>
+                        <p>AI analyzes your footage for faces, emotions, composition, and colors</p>
+                    </div>
+                    <div class="step-line"></div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-number">03</div>
+                    <div class="step-content">
+                        <h3>Get Suggestions</h3>
+                        <p>Receive instant feedback and suggestions to improve your shot</p>
+                    </div>
+                    <div class="step-line"></div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-number">04</div>
+                    <div class="step-content">
+                        <h3>Perfect Your Shot</h3>
+                        <p>Adjust your framing and composition based on AI recommendations</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technology Section -->
+        <section id="technology" class="technology">
+            <div class="section-header">
+                <h2 class="section-title">Powered by Advanced AI</h2>
+                <p class="section-description">Built with cutting-edge machine learning models</p>
+            </div>
+
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <div class="tech-badge">Deep Learning</div>
+                    <h3>PyTorch</h3>
+                    <p>Neural networks for emotion recognition</p>
+                </div>
+
+                <div class="tech-card">
+                    <div class="tech-badge">Object Detection</div>
+                    <h3>YOLOv5</h3>
+                    <p>Real-time scene and object detection</p>
+                </div>
+
+                <div class="tech-card">
+                    <div class="tech-badge">Computer Vision</div>
+                    <h3>OpenCV</h3>
+                    <p>Advanced image processing and analysis</p>
+                </div>
+
+                <div class="tech-card">
+                    <div class="tech-badge">Face Recognition</div>
+                    <h3>Haar Cascade</h3>
+                    <p>Accurate face detection and tracking</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <div class="cta-content">
+                <h2>Ready to Transform Your Cinematography?</h2>
+                <p>Start creating professional-grade footage with AI-powered assistance</p>
+                <button id="get-started-btn-2" class="btn btn-primary btn-large">
+                    <span>Launch CineMind</span>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="logo">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <rect width="32" height="32" rx="8" fill="url(#logo-gradient-footer)" />
+                            <path d="M16 8L20 12L16 16L12 12L16 8Z" fill="white" opacity="0.9" />
+                            <path d="M16 16L20 20L16 24L12 20L16 16Z" fill="white" opacity="0.6" />
+                            <defs>
+                                <linearGradient id="logo-gradient-footer" x1="0" y1="0" x2="32" y2="32">
+                                    <stop offset="0%" stop-color="#667eea" />
+                                    <stop offset="100%" stop-color="#764ba2" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <span>CineMind</span>
+                    </div>
+                    <p>AI-Powered Film Assistant</p>
+                </div>
+                <div class="footer-copyright">
+                    <p>&copy; 2026 CineMind. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Workflow Page -->
+    <div id="workflow-page" class="page">
+        <div class="workflow-container">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="logo">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <rect width="32" height="32" rx="8" fill="url(#logo-gradient-sidebar)" />
+                            <path d="M16 8L20 12L16 16L12 12L16 8Z" fill="white" opacity="0.9" />
+                            <path d="M16 16L20 20L16 24L12 20L16 16Z" fill="white" opacity="0.6" />
+                            <defs>
+                                <linearGradient id="logo-gradient-sidebar" x1="0" y1="0" x2="32" y2="32">
+                                    <stop offset="0%" stop-color="#667eea" />
+                                    <stop offset="100%" stop-color="#764ba2" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <span>CineMind</span>
+                    </div>
+                    <button id="back-to-home" class="icon-btn" title="Back to Home">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M15 10H5M5 10L9 6M5 10L9 14" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                </div>
+
+                <nav class="sidebar-nav">
+                    <div class="nav-section">
+                        <div class="nav-section-title">Analysis Tools</div>
+                        <button class="nav-item active" data-panel="camera">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <rect x="2" y="5" width="16" height="11" rx="2" stroke="currentColor"
+                                    stroke-width="1.5" />
+                                <circle cx="10" cy="10.5" r="2.5" stroke="currentColor" stroke-width="1.5" />
+                            </svg>
+                            <span>Camera Feed</span>
+                        </button>
+                        <button class="nav-item" data-panel="emotion">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5" />
+                                <path d="M7 9C7 9 7.5 8 8.5 8C9.5 8 10 9 10 9" stroke="currentColor" stroke-width="1.5"
+                                    stroke-linecap="round" />
+                                <path d="M11 9C11 9 11.5 8 12.5 8C13.5 8 14 9 14 9" stroke="currentColor"
+                                    stroke-width="1.5" stroke-linecap="round" />
+                                <path d="M7 12.5C7 12.5 8 14 10 14C12 14 13 12.5 13 12.5" stroke="currentColor"
+                                    stroke-width="1.5" stroke-linecap="round" />
+                            </svg>
+                            <span>Emotion Analysis</span>
+                        </button>
+                        <button class="nav-item" data-panel="color">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <rect x="3" y="3" width="5" height="5" rx="1" fill="currentColor" opacity="0.3" />
+                                <rect x="10" y="3" width="5" height="5" rx="1" fill="currentColor" opacity="0.6" />
+                                <rect x="3" y="10" width="5" height="5" rx="1" fill="currentColor" opacity="0.8" />
+                                <rect x="10" y="10" width="5" height="5" rx="1" fill="currentColor" />
+                            </svg>
+                            <span>Color Palette</span>
+                        </button>
+                        <button class="nav-item" data-panel="framing">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <rect x="3" y="3" width="14" height="14" rx="1" stroke="currentColor"
+                                    stroke-width="1.5" />
+                                <line x1="8.5" y1="3" x2="8.5" y2="17" stroke="currentColor" stroke-dasharray="2 2" />
+                                <line x1="11.5" y1="3" x2="11.5" y2="17" stroke="currentColor" stroke-dasharray="2 2" />
+                                <line x1="3" y1="8.5" x2="17" y2="8.5" stroke="currentColor" stroke-dasharray="2 2" />
+                                <line x1="3" y1="11.5" x2="17" y2="11.5" stroke="currentColor" stroke-dasharray="2 2" />
+                            </svg>
+                            <span>Framing</span>
+                        </button>
+                        <button class="nav-item" data-panel="scene">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M10 3L3 7V11C3 15 10 18 10 18C10 18 17 15 17 11V7L10 3Z" stroke="currentColor"
+                                    stroke-width="1.5" stroke-linejoin="round" />
+                                <path d="M8 10L9.5 11.5L13 8" stroke="currentColor" stroke-width="1.5"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <span>Scene Analysis</span>
+                        </button>
+                    </div>
+
+                    <div class="nav-section">
+                        <div class="nav-section-title">Settings</div>
+                        <button class="nav-item" data-panel="settings">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5" />
+                                <path
+                                    d="M10 2V4M10 16V18M18 10H16M4 10H2M15.5 4.5L14 6M6 14L4.5 15.5M15.5 15.5L14 14M6 6L4.5 4.5"
+                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                            </svg>
+                            <span>Settings</span>
+                        </button>
+                    </div>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <button id="tutorial-btn" class="btn btn-secondary btn-small">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5" />
+                            <path d="M8 6V8M8 10H8.01" stroke="currentColor" stroke-width="1.5"
+                                stroke-linecap="round" />
+                        </svg>
+                        <span>Tutorial</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Persistent Shared Workspace -->
+                <div class="shared-workspace">
+                    <div class="workspace-header">
+                        <div class="header-info">
+                            <h2 id="workspace-title">Analysis Mode: Camera</h2>
+                            <p id="workspace-subtitle">Live video feed from your camera</p>
+                        </div>
+                        <div class="panel-actions">
+                            <button id="start-camera-btn" class="btn btn-primary">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <circle cx="8" cy="8" r="6" fill="currentColor" />
+                                </svg>
+                                <span>Start Camera</span>
+                            </button>
+                            <button id="stop-camera-btn" class="btn btn-secondary" style="display: none;">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <rect x="4" y="4" width="8" height="8" fill="currentColor" />
+                                </svg>
+                                <span>Stop Camera</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="video-container">
+                        <div id="video-placeholder" class="video-placeholder">
+                            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                                <rect x="8" y="16" width="48" height="32" rx="4" stroke="currentColor"
+                                    stroke-width="3" />
+                                <circle cx="32" cy="32" r="8" stroke="currentColor" stroke-width="3" />
+                            </svg>
+                            <p>Click "Start Camera" to begin</p>
+                        </div>
+                        <video id="camera-feed" autoplay playsinline></video>
+                        <canvas id="analysis-canvas"></canvas>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Faces Detected</div>
+                            <div class="stat-value" id="faces-count">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Current Emotion</div>
+                            <div class="stat-value" id="current-emotion">-</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Frame Rate</div>
+                            <div class="stat-value" id="frame-rate">0 FPS</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Analysis Status</div>
+                            <div class="stat-value" id="analysis-status">Idle</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabbed Content Panels (Tool Specific) -->
+                <div class="tool-panels">
+                    <!-- Camera Panel (Empty or Overview) -->
+                    <div id="camera-panel" class="content-panel active">
+                        <div class="overview-box">
+                            <h3>Welcome to CineMind Analysis</h3>
+                            <p>Select a tool from the sidebar to see detailed real-time analysis here.</p>
+                        </div>
+                    </div>
+
+                    <!-- Emotion Analysis Panel -->
+                    <div id="emotion-panel" class="content-panel">
+                        <div class="analysis-content">
+                            <div class="emotion-display">
+                                <div class="emotion-icon-large" id="emotion-icon">😊</div>
+                                <h3 id="emotion-label">Happy</h3>
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill" id="emotion-confidence" style="width: 85%"></div>
+                                </div>
+                                <p class="confidence-text">Confidence: <span id="emotion-confidence-text">85%</span></p>
+                            </div>
+
+                            <div class="emotion-history">
+                                <h4>Emotion History</h4>
+                                <div class="emotion-timeline" id="emotion-timeline">
+                                    <div class="timeline-item">
+                                        <span class="timeline-time">00:00</span>
+                                        <span class="timeline-emotion">😊 Happy</span>
+                                        <span class="timeline-confidence">85%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Color Palette Panel -->
+                    <div id="color-panel" class="content-panel">
+                        <div class="analysis-content">
+                            <div class="color-palette-display">
+                                <h4>Current Palette</h4>
+                                <div class="color-swatches" id="color-swatches">
+                                    <div class="color-swatch" style="background: #FF6B6B"></div>
+                                    <div class="color-swatch" style="background: #4ECDC4"></div>
+                                    <div class="color-swatch" style="background: #45B7D1"></div>
+                                    <div class="color-swatch" style="background: #FFA07A"></div>
+                                    <div class="color-swatch" style="background: #98D8C8"></div>
+                                </div>
+                            </div>
+
+                            <div class="color-metrics">
+                                <div class="metric-item">
+                                    <label>Average Hue</label>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill"
+                                            style="width: 60%; background: linear-gradient(90deg, #FF0000, #00FF00, #0000FF)">
+                                        </div>
+                                    </div>
+                                    <span id="hue-value">120°</span>
+                                </div>
+                                <div class="metric-item">
+                                    <label>Saturation</label>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill" id="saturation-fill"
+                                            style="width: 70%; background: #667eea"></div>
+                                    </div>
+                                    <span id="saturation-value">70%</span>
+                                </div>
+                                <div class="metric-item">
+                                    <label>Brightness</label>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill" id="brightness-fill"
+                                            style="width: 65%; background: #f093fb"></div>
+                                    </div>
+                                    <span id="brightness-value">65%</span>
+                                </div>
+                            </div>
+
+                            <div class="suggestions-box">
+                                <h4>Suggestions</h4>
+                                <div id="color-suggestions" class="suggestions-list">
+                                    <div class="suggestion-item">
+                                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                            <path d="M10 2L12 8L18 8L13 12L15 18L10 14L5 18L7 12L2 8L8 8L10 2Z"
+                                                fill="#FFD700" />
+                                        </svg>
+                                        <span>The scene has a warm color palette, which is good for creating a cozy or
+                                            energetic mood.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Framing Panel -->
+                    <div id="framing-panel" class="content-panel">
+                        <div class="panel-sub-header">
+                            <div class="panel-actions">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="show-grid-toggle" checked>
+                                    <span class="toggle-slider"></span>
+                                    <span class="toggle-label">Show Grid</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="analysis-content">
+                            <div class="framing-checklist">
+                                <h4>Composition Checklist</h4>
+                                <div class="checklist-items">
+                                    <div class="checklist-item" id="rule-of-thirds-check">
+                                        <div class="check-icon">✓</div>
+                                        <div class="check-content">
+                                            <h5>Rule of Thirds</h5>
+                                            <p>Subject aligned with grid intersections</p>
+                                        </div>
+                                        <div class="check-status status-good">Good</div>
+                                    </div>
+                                    <div class="checklist-item" id="headroom-check">
+                                        <div class="check-icon">✓</div>
+                                        <div class="check-content">
+                                            <h5>Headroom</h5>
+                                            <p>Appropriate space above subject's head</p>
+                                        </div>
+                                        <div class="check-status status-good">Good</div>
+                                    </div>
+                                    <div class="checklist-item" id="looking-room-check">
+                                        <div class="check-icon">⚠</div>
+                                        <div class="check-content">
+                                            <h5>Looking Room</h5>
+                                            <p>Space in front of subject's gaze direction</p>
+                                        </div>
+                                        <div class="check-status status-warning">Needs Adjustment</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="suggestions-box">
+                                <h4>Framing Suggestions</h4>
+                                <div id="framing-suggestions" class="suggestions-list">
+                                    <div class="suggestion-item">
+                                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                            <circle cx="10" cy="10" r="8" stroke="#667eea" stroke-width="2" />
+                                            <path d="M10 6V10L13 13" stroke="#667eea" stroke-width="2"
+                                                stroke-linecap="round" />
+                                        </svg>
+                                        <span>Provide more looking room in front of the subject</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scene Analysis Panel -->
+                    <div id="scene-panel" class="content-panel">
+                        <div class="analysis-content">
+                            <div class="scene-status">
+                                <div class="status-indicator status-clean" id="scene-status-indicator">
+                                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                        <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="3" />
+                                        <path d="M16 24L21 29L32 18" stroke="currentColor" stroke-width="3"
+                                            stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </div>
+                                <h3 id="scene-status-text">Scene is Clear</h3>
+                                <p id="scene-status-description">No unwanted clutter detected</p>
+                            </div>
+
+                            <div class="detected-objects">
+                                <h4>Detected Objects</h4>
+                                <div id="objects-list" class="objects-grid">
+                                    <div class="object-tag">
+                                        <span class="object-icon">👤</span>
+                                        <span>Person (Main Subject)</span>
+                                        <span class="object-confidence">95%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="suggestions-box">
+                                <h4>Scene Suggestions</h4>
+                                <div id="scene-suggestions" class="suggestions-list">
+                                    <div class="suggestion-item">
+                                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                            <path d="M10 2L12 8L18 8L13 12L15 18L10 14L5 18L7 12L2 8L8 8L10 2Z"
+                                                fill="#4CAF50" />
+                                        </svg>
+                                        <span>Scene composition looks great! Keep the background clean.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Panel -->
+                    <div id="settings-panel" class="content-panel">
+                        <div class="settings-content">
+                            <div class="settings-section">
+                                <h4>Camera Settings</h4>
+                                <div class="setting-item">
+                                    <label for="camera-select">Camera Source</label>
+                                    <select id="camera-select" class="setting-select">
+                                        <option value="0">Default Camera</option>
+                                        <option value="1">External Camera</option>
+                                    </select>
+                                </div>
+                                <div class="setting-item">
+                                    <label for="resolution-select">Resolution</label>
+                                    <select id="resolution-select" class="setting-select">
+                                        <option value="640x480">640 × 480</option>
+                                        <option value="1280x720" selected>1280 × 720 (HD)</option>
+                                        <option value="1920x1080">1920 × 1080 (Full HD)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h4>Analysis Settings</h4>
+                                <div class="setting-item">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="emotion-analysis-toggle" checked>
+                                        <span class="toggle-slider"></span>
+                                        <span class="toggle-label">Enable Emotion Analysis</span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="color-analysis-toggle" checked>
+                                        <span class="toggle-slider"></span>
+                                        <span class="toggle-label">Enable Color Analysis</span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="framing-analysis-toggle" checked>
+                                        <span class="toggle-slider"></span>
+                                        <span class="toggle-label">Enable Framing Analysis</span>
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="scene-analysis-toggle" checked>
+                                        <span class="toggle-slider"></span>
+                                        <span class="toggle-label">Enable Scene Analysis</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="settings-section">
+                                <h4>Analysis Frequency</h4>
+                                <div class="setting-item">
+                                    <label for="analysis-interval">Update Interval (seconds)</label>
+                                    <input type="range" id="analysis-interval" min="1" max="30" value="10"
+                                        class="setting-slider">
+                                    <span id="interval-value">10s</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- end tool-panels -->
+            </main>
+        </div>
+    </div>
+
+    <!-- Tutorial Overlay -->
+    <div id="tutorial-overlay" class="tutorial-overlay">
+        <div class="tutorial-backdrop"></div>
+        <div class="tutorial-spotlight"></div>
+        <div class="tutorial-tooltip">
+            <div class="tooltip-content">
+                <h3 id="tutorial-title">Welcome to CineMind!</h3>
+                <p id="tutorial-description">Let's take a quick tour of the main features.</p>
+                <div class="tooltip-actions">
+                    <button id="tutorial-skip" class="btn btn-secondary btn-small">Skip</button>
+                    <div class="tutorial-progress">
+                        <span id="tutorial-step">1</span> / <span id="tutorial-total">5</span>
+                    </div>
+                    <button id="tutorial-next" class="btn btn-primary btn-small">Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="tutorial_fix.js"></script>
+    <script src="backend_integration.js"></script>
+</body>
+
+</html>

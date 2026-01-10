@@ -7,7 +7,7 @@ from FER import DeepCNN
 
 # Load the pre-trained model
 model = DeepCNN(input_channels=1, num_classes=7)  # Initialize the model architecture
-model.load_state_dict(torch.load("/Users/bhargavdesai/Desktop/AI Film making/v1_93.3.pth", map_location=torch.device('cpu')))
+model.load_state_dict(torch.load("/Users/vedantdesai/CineMind/v1_93.3.pth", map_location=torch.device('cpu')))
 model.eval()  # Set model to evaluation mode
 
 # Load OpenCV's Haar cascade for face detection
@@ -32,34 +32,29 @@ emotion_scene_types = {
     'neutral': 'Balanced/Natural'
 }
 
-def analyze_emotion(frame):
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  # Convert frame to grayscale for face detection
-    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5, minSize=(30, 30))
-
-    emotion = "No face detected"  # Default emotion in case no face is detected
-    suggestions = []  # Default empty suggestions list
-
-    for (x, y, w, h) in faces:
-        face = gray[y:y+h, x:x+w]  # Crop the detected face
-        face_pil = Image.fromarray(face)  # Convert to PIL Image
-        face_tensor = transform(face_pil).unsqueeze(0)  # Apply transformations and add batch dimension
-
-        with torch.no_grad():
-            output = model(face_tensor)  # Get model predictions
-            predicted_index = torch.argmax(output, dim=1).item()  # Get index of highest probability
-            emotion = emotion_labels[predicted_index]  # Map index to emotion
-
-        # Display emotion
-        text = f"{emotion.capitalize()}"
-        cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 255, 255), 2)
-        cv2.putText(frame, text, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 255), 2)
+def analyze_emotion(frame, prefetched_emotion=None):
+    """
+    Analyzes emotion and then color palette.
+    Prefetched_emotion can be passed to avoid re-detecting.
+    """
+    emotion = prefetched_emotion
     
-    # Now emotion is always defined, so no UnboundLocalError
+    if emotion is None:
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5, minSize=(30, 30))
+        emotion = "neutral" # Default
+        
+        for (x, y, w, h) in faces:
+            face = gray[y:y+h, x:x+w]
+            face_pil = Image.fromarray(face)
+            face_tensor = transform(face_pil).unsqueeze(0)
+            with torch.no_grad():
+                output = model(face_tensor)
+                predicted_index = torch.argmax(output, dim=1).item()
+                emotion = emotion_labels[predicted_index]
+            break # Just take the first one
+
     frame, suggestions = analyze_color_palette(frame, emotion)
-    
-    for suggestion in suggestions:
-        print(f"Suggestion based on {emotion}: {suggestion}")
-
     return frame, suggestions
 
 
