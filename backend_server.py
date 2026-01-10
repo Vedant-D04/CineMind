@@ -11,6 +11,8 @@ import numpy as np
 from datetime import datetime
 import torch
 import traceback
+import os
+
 
 # Import analysis modules
 # We'll use the logic directly or call the refactored functions
@@ -134,7 +136,8 @@ def extract_color_metrics(frame):
     }
 
 if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5001))
     print("=" * 50)
-    print("CineMind Backend Server Starting (Port 5001)...")
+    print(f"CineMind Backend Server Starting (Port {port})...")
     print("=" * 50)
-    app.run(host='0.0.0.0', port=5001, debug=True, threaded=True)
+    app.run(host='0.0.0.0', port=port, debug=False, threaded=True)
