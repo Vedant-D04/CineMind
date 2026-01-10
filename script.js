@@ -66,9 +66,9 @@ navItems.forEach(item => {
         // Update workspace header
         document.getElementById('workspace-title').textContent = `Analysis Mode: ${panelName}`;
 
-        // Toggle Workspace Visibility for Lumière AI (Chat)
+        // Toggle Workspace Visibility for Chat and Settings
         const sharedWorkspace = document.querySelector('.shared-workspace');
-        if (panelId === 'chat') {
+        if (panelId === 'chat' || panelId === 'settings') {
             sharedWorkspace.style.display = 'none';
         } else {
             sharedWorkspace.style.display = 'flex'; // Restore flex layout

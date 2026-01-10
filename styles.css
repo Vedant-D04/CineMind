@@ -786,11 +786,13 @@ h6 {
     display: grid;
     grid-template-columns: 280px 1fr;
     height: 100vh;
+    background: transparent;
 }
 
 /* Sidebar */
 .sidebar {
-    background: var(--bg-secondary);
+    background: rgba(10, 10, 10, 0.85);
+    backdrop-filter: blur(10px);
     border-right: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
@@ -857,7 +859,7 @@ h6 {
 
 /* Main Content */
 .main-content {
-    background: var(--bg-primary);
+    background: transparent;
     overflow-y: auto;
     padding: var(--spacing-xl);
 }
@@ -1360,24 +1362,31 @@ h6 {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-xl);
     margin-bottom: var(--spacing-xl);
+    backdrop-filter: blur(10px);
 }
 
 .settings-section h4 {
     margin-bottom: var(--spacing-lg);
+    color: var(--text-primary);
+    font-size: 1.25rem;
 }
 
 .setting-item {
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
 }
 
 .setting-item:last-child {
     margin-bottom: 0;
 }
 
-.setting-item label {
+.setting-item>label:not(.toggle-switch) {
     display: block;
     font-weight: 500;
-    margin-bottom: var(--spacing-sm);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
 }
 
 .setting-select {
@@ -1630,6 +1639,14 @@ h6 {
     align-items: center;
     gap: var(--spacing-md);
     cursor: pointer;
+    padding: var(--spacing-md);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    transition: background var(--transition-base);
+}
+
+.toggle-switch:hover {
+    background: var(--bg-hover);
 }
 
 .toggle-switch input {
