@@ -3,8 +3,10 @@ import torch
 import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 
+import os
 # Load YOLOv5 model
-model = torch.hub.load('ultralytics/yolov5', 'custom', path='/Users/vedantdesai/CineMind/yolov5s.pt', force_reload=False)
+model_path = os.path.join(os.path.dirname(__file__), 'yolov5s.pt')
+model = torch.hub.load('ultralytics/yolov5', 'custom', path=model_path, force_reload=False)
 
 # Define unwanted objects (these are typical clutter items in a frame)
 UNWANTED_OBJECTS = [

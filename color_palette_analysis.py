@@ -5,9 +5,11 @@ from PIL import Image
 import numpy as np
 from FER import DeepCNN
 
+import os
 # Load the pre-trained model
+model_path = os.path.join(os.path.dirname(__file__), 'v1_93.3.pth')
 model = DeepCNN(input_channels=1, num_classes=7)  # Initialize the model architecture
-model.load_state_dict(torch.load("/Users/vedantdesai/CineMind/v1_93.3.pth", map_location=torch.device('cpu')))
+model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
 model.eval()  # Set model to evaluation mode
 
 # Load OpenCV's Haar cascade for face detection
