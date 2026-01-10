@@ -1,3 +1,7 @@
+const ANALYSIS_INTERVAL = 1000; // 1 second
+let detectedFaces = []; // Store faces for continuous drawing
+const API_BASE_URL = 'http://127.0.0.1:5001';
+
 // ===========================
 // Page Navigation
 // ===========================
@@ -84,6 +88,11 @@ const videoPlaceholder = document.getElementById('video-placeholder');
 const cameraFeed = document.getElementById('camera-feed');
 const analysisCanvas = document.getElementById('analysis-canvas');
 const ctx = analysisCanvas.getContext('2d');
+
+// Chat Elements
+const chatInput = document.getElementById('chat-input');
+const sendChatBtn = document.getElementById('send-chat-btn');
+const chatMessages = document.getElementById('chat-messages');
 
 let stream = null;
 let animationId = null;
@@ -179,6 +188,16 @@ async function analyzeFrame() {
     // Clear canvas
     ctx.clearRect(0, 0, analysisCanvas.width, analysisCanvas.height);
 
+    // Redraw previously detected faces if any
+    detectedFaces.forEach(face => {
+        ctx.strokeStyle = '#4CAF50';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(face.x, face.y, face.width, face.height);
+        ctx.fillStyle = '#4CAF50';
+        ctx.font = '16px Inter';
+        ctx.fillText('Face Detected', face.x, face.y - 10);
+    });
+
     // Draw rule of thirds grid if enabled
     if (document.getElementById('show-grid-toggle').checked) {
         drawRuleOfThirdsGrid();
@@ -197,7 +216,7 @@ async function analyzeFrame() {
         const imageData = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
 
         // Send to backend
-        const response = await fetch('http://localhost:5001/analyze', {
+        const response = await fetch(`${API_BASE_URL}/analyze`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -227,18 +246,11 @@ async function analyzeFrame() {
 // Update UI with backend results
 function updateUIWithBackendResults(results) {
     // Update face detection
-    if (results.faces && results.faces.length > 0) {
+    if (results.faces) {
+        detectedFaces = results.faces;
         updateFaceCount(results.faces.length);
-        // Draw face boxes on canvas
-        results.faces.forEach(face => {
-            ctx.strokeStyle = '#4CAF50';
-            ctx.lineWidth = 3;
-            ctx.strokeRect(face.x, face.y, face.width, face.height);
-            ctx.fillStyle = '#4CAF50';
-            ctx.font = '16px Inter';
-            ctx.fillText('Face Detected', face.x, face.y - 10);
-        });
     } else {
+        detectedFaces = [];
         updateFaceCount(0);
     }
 
@@ -256,7 +268,6 @@ function updateUIWithBackendResults(results) {
 
         const emoji = emotionIcons[results.emotion.label.toLowerCase()] || '😐';
         const label = results.emotion.label.charAt(0).toUpperCase() + results.emotion.label.slice(1);
-        updateCurrentEmotion(`${emoji} ${label}`);
 
         // Update emotion panel
         document.getElementById('emotion-icon').textContent = emoji;
@@ -425,15 +436,8 @@ function simulateFaceDetection() {
     const faceX = (width - faceWidth) / 2 + (Math.random() - 0.5) * 100;
     const faceY = (height - faceHeight) / 2 + (Math.random() - 0.5) * 50;
 
-    // Draw face bounding box
-    ctx.strokeStyle = '#4CAF50';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(faceX, faceY, faceWidth, faceHeight);
-
-    // Draw label
-    ctx.fillStyle = '#4CAF50';
-    ctx.font = '16px Inter';
-    ctx.fillText('Face Detected', faceX, faceY - 10);
+    // Store simulated face for continuous drawing
+    detectedFaces = [{ x: faceX, y: faceY, width: faceWidth, height: faceHeight }];
 
     // Update face count
     updateFaceCount(1);
@@ -441,21 +445,7 @@ function simulateFaceDetection() {
     // Simulate emotion detection
     const emotions = ['😊 Happy', '😢 Sad', '😮 Surprise', '😐 Neutral', '😠 Angry'];
     const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
-    updateCurrentEmotion(randomEmotion);
-}
-
-// ===========================
-// Stats Updates
-// ===========================
-function updateFaceCount(count) {
-    document.getElementById('faces-count').textContent = count;
-}
-
-function updateCurrentEmotion(emotion) {
-    document.getElementById('current-emotion').textContent = emotion;
-
-    // Update emotion panel
-    const [emoji, label] = emotion.split(' ');
+    const [emoji, label] = randomEmotion.split(' ');
     document.getElementById('emotion-icon').textContent = emoji;
     document.getElementById('emotion-label').textContent = label;
 
@@ -465,8 +455,97 @@ function updateCurrentEmotion(emotion) {
     document.getElementById('emotion-confidence-text').textContent = `${confidence}%`;
 }
 
+// ===========================
+// Stats Updates
+// ===========================
+function updateFaceCount(count) {
+    document.getElementById('faces-count').textContent = count;
+}
+
 function updateFrameRate(rate) {
-    document.getElementById('frame-rate').textContent = `${rate} FPS`;
+    const el = document.getElementById('frame-rate');
+    if (el) el.textContent = `${rate} FPS`;
+}
+
+// ===========================
+// Chat System
+// ===========================
+
+async function sendChatMessage() {
+    const message = chatInput.value.trim();
+    if (!message) return;
+
+    // Add user message to UI
+    appendMessage('user', message);
+    chatInput.value = '';
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                messages: [{ role: "user", content: message }]
+            })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            appendMessage('bot', data.response);
+        } else {
+            appendMessage('bot', "I'm detecting some interference. Please try again.");
+        }
+    } catch (err) {
+        console.error("Chat error:", err);
+        appendMessage('bot', "I'm having trouble connecting to the director. Please try again.");
+    }
+}
+
+function appendMessage(role, text) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `message ${role}-message`;
+    // Format newlines for basic markdown-like appearance
+    const formattedText = text.replace(/\n/g, '<br>');
+    msgDiv.innerHTML = `<div class="message-content"><p>${formattedText}</p></div>`;
+    chatMessages.appendChild(msgDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Handle suggestion chips
+document.querySelectorAll('.suggestion-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+        chatInput.value = chip.textContent;
+        sendChatMessage();
+    });
+});
+
+if (sendChatBtn) {
+    sendChatBtn.addEventListener('click', sendChatMessage);
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendChatMessage();
+    });
+}
+
+function getHueDescription(hue) {
+    if (hue >= 0 && hue < 30) return "Warm Red/Orange";
+    if (hue >= 30 && hue < 60) return "Warm Yellow";
+    if (hue >= 60 && hue < 150) return "Fresh Green";
+    if (hue >= 150 && hue < 210) return "Cool Cyan/Teal";
+    if (hue >= 210 && hue < 270) return "Deep Blue";
+    if (hue >= 270 && hue < 330) return "Vibrant Purple";
+    return "Warm Red";
+}
+
+function getSaturationDescription(s) {
+    if (s < 20) return "Muted / Grayscale";
+    if (s < 50) return "Natural / Desaturated";
+    if (s < 80) return "Vibrant / Rich";
+    return "High Saturation";
+}
+
+function getBrightnessDescription(b) {
+    if (b < 30) return "Low Key / Dark";
+    if (b < 70) return "Balanced Exposure";
+    return "High Key / Bright";
 }
 
 function updateAnalysisStatus(status) {
@@ -663,36 +742,6 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 // ===========================
 // Demo Data Updates
 // ===========================
-// Periodically update emotion timeline
-setInterval(() => {
-    if (isAnalyzing) {
-        const timeline = document.getElementById('emotion-timeline');
-        const emotions = ['😊 Happy', '😢 Sad', '😮 Surprise', '😐 Neutral', '😠 Angry'];
-        const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
-        const confidence = Math.floor(Math.random() * 20) + 75;
-        const time = new Date().toLocaleTimeString('en-US', {
-            hour12: false,
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-
-        const item = document.createElement('div');
-        item.className = 'timeline-item';
-        item.innerHTML = `
-            <span class="timeline-time">${time}</span>
-            <span class="timeline-emotion">${randomEmotion}</span>
-            <span class="timeline-confidence">${confidence}%</span>
-        `;
-
-        timeline.insertBefore(item, timeline.firstChild);
-
-        // Keep only last 10 items
-        while (timeline.children.length > 10) {
-            timeline.removeChild(timeline.lastChild);
-        }
-    }
-}, 5000);
-
 // Update color metrics
 setInterval(() => {
     if (isAnalyzing) {
@@ -704,8 +753,14 @@ setInterval(() => {
         document.getElementById('saturation-value').textContent = `${saturation}%`;
         document.getElementById('brightness-value').textContent = `${brightness}%`;
 
-        document.getElementById('saturation-fill').style.width = `${saturation}%`;
-        document.getElementById('brightness-fill').style.width = `${brightness}%`;
+        if (document.getElementById('hue-fill')) document.getElementById('hue-fill').style.width = `${(hue / 360) * 100}%`;
+        if (document.getElementById('saturation-fill')) document.getElementById('saturation-fill').style.width = `${saturation}%`;
+        if (document.getElementById('brightness-fill')) document.getElementById('brightness-fill').style.width = `${brightness}%`;
+
+        // Update explanations
+        if (document.getElementById('hue-explanation')) document.getElementById('hue-explanation').textContent = getHueDescription(hue);
+        if (document.getElementById('saturation-explanation')) document.getElementById('saturation-explanation').textContent = getSaturationDescription(saturation);
+        if (document.getElementById('brightness-explanation')) document.getElementById('brightness-explanation').textContent = getBrightnessDescription(brightness);
 
         // Update color swatches
         const swatches = document.querySelectorAll('.color-swatch');

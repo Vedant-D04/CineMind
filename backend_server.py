@@ -14,7 +14,9 @@ import traceback
 
 # Import analysis modules
 # We'll use the logic directly or call the refactored functions
-from emotion_analysis import analyze_emotion
+# We'll use the logic directly or call the refactored functions
+from FaceDetector import FaceDetector
+from ai_director_bot import get_ai_response
 from color_palette_analysis import analyze_emotion as analyze_color
 from framing_analysis import analyze_framing
 from scene_analysis import analyze_scene
@@ -28,6 +30,20 @@ def health_check():
         'status': 'healthy',
         'timestamp': datetime.now().isoformat()
     })
+
+# Initialize face detector
+face_detector = FaceDetector()
+
+@app.route('/chat', methods=['POST'])
+def chat_endpoint():
+    try:
+        data = request.json
+        messages = data.get('messages', [])
+        response = get_ai_response(messages)
+        return jsonify({'response': response})
+    except Exception as e:
+        print(f"Chat Error: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/analyze', methods=['POST'])
 def analyze_frame():
@@ -47,27 +63,29 @@ def analyze_frame():
             print("Error: Could not decode image")
             return jsonify({'error': 'Invalid image'}), 400
         
-        # 1. Run Emotion Analysis (this now returns faces_data and primary_emotion)
-        # It also draws the boxes on its copy of the frame
+        # 1. Face Detection (Replaces Emotion Analysis for faces)
         analysis_frame = frame.copy()
+        faces_data = []
         try:
-            _, faces_data, primary_emotion = analyze_emotion(analysis_frame)
-            print(f"Detected {len(faces_data)} faces. Primary Emotion: {primary_emotion['label']}")
+            # FaceDetector returns internal rect format, need to standardize if necessary
+            # Assuming detect_faces returns list of (x, y, w, h)
+            faces = face_detector.detect_faces(analysis_frame)
+            # Format explicitly for consistency: [x, y, w, h] is standard
+            faces_data = faces 
+            print(f"Detected {len(faces_data)} faces.")
         except Exception as e:
-            print(f"Emotion Analysis Exception: {e}")
+            print(f"Face Detection Exception: {e}")
             traceback.print_exc()
             faces_data = []
-            primary_emotion = {'label': 'neutral', 'confidence': 0.0}
 
         results = {
             'timestamp': datetime.now().isoformat(),
-            'faces': faces_data,
-            'emotion': primary_emotion
+            'faces': faces_data
         }
         
-        # 2. Color analysis (pass the detected emotion to avoid redundancy)
+        # 2. Color analysis (pass neutral if emotion not available)
         try:
-            _, color_suggestions = analyze_color(frame.copy(), prefetched_emotion=primary_emotion['label'])
+            _, color_suggestions = analyze_color(frame.copy(), prefetched_emotion='neutral')
             results['color_analysis'] = {
                 'suggestions': color_suggestions,
                 'metrics': extract_color_metrics(frame)
@@ -77,15 +95,12 @@ def analyze_frame():
             results['color_analysis'] = {'suggestions': [], 'metrics': {}}
         
         # 3. Framing analysis
+        # 3. Framing analysis
         try:
-            _, framing_suggestions = analyze_framing(frame.copy())
+            _, framing_suggestions, framing_checks = analyze_framing(frame.copy())
             results['framing'] = {
                 'suggestions': framing_suggestions,
-                'checks': {
-                    'rule_of_thirds': len(faces_data) > 0,
-                    'headroom': len(faces_data) > 0,
-                    'looking_room': len(faces_data) > 0
-                }
+                'checks': framing_checks
             }
         except Exception as e:
             print(f"Framing Analysis Exception: {e}")

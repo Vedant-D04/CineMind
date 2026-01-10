@@ -357,17 +357,16 @@
                             </svg>
                             <span>Camera Feed</span>
                         </button>
-                        <button class="nav-item" data-panel="emotion">
+                        <button class="nav-item" data-panel="chat">
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5" />
-                                <path d="M7 9C7 9 7.5 8 8.5 8C9.5 8 10 9 10 9" stroke="currentColor" stroke-width="1.5"
-                                    stroke-linecap="round" />
-                                <path d="M11 9C11 9 11.5 8 12.5 8C13.5 8 14 9 14 9" stroke="currentColor"
-                                    stroke-width="1.5" stroke-linecap="round" />
-                                <path d="M7 12.5C7 12.5 8 14 10 14C12 14 13 12.5 13 12.5" stroke="currentColor"
-                                    stroke-width="1.5" stroke-linecap="round" />
+                                <path
+                                    d="M18 10C18 14.4183 14.4183 18 10 18C5.58172 18 2 14.4183 2 10C2 5.58172 5.58172 2 10 2C14.4183 2 18 5.58172 18 10Z"
+                                    stroke="currentColor" stroke-width="1.5" />
+                                <path
+                                    d="M6 9H8M12 9H14M10 13C10 13 9 12 8 12C7 12 6 13 6 13M10 13C10 13 11 12 12 12C13 12 14 13 14 13"
+                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
                             </svg>
-                            <span>Emotion Analysis</span>
+                            <span>AI Director</span>
                         </button>
                         <button class="nav-item" data-panel="color">
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -470,8 +469,8 @@
                             <div class="stat-value" id="faces-count">0</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-label">Current Emotion</div>
-                            <div class="stat-value" id="current-emotion">-</div>
+                            <div class="stat-label">AI Status</div>
+                            <div class="stat-value" id="ai-status">Online</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-label">Frame Rate</div>
@@ -494,26 +493,45 @@
                         </div>
                     </div>
 
-                    <!-- Emotion Analysis Panel -->
-                    <div id="emotion-panel" class="content-panel">
-                        <div class="analysis-content">
-                            <div class="emotion-display">
-                                <div class="emotion-icon-large" id="emotion-icon">😊</div>
-                                <h3 id="emotion-label">Happy</h3>
-                                <div class="confidence-bar">
-                                    <div class="confidence-fill" id="emotion-confidence" style="width: 85%"></div>
+                    <!-- AI Director Chat Panel -->
+                    <div id="chat-panel" class="content-panel">
+                        <div class="chat-interface">
+                            <div class="chat-header">
+                                <div class="ai-avatar">🎬</div>
+                                <div class="ai-info">
+                                    <h3>AI Director</h3>
+                                    <p>Cinematography & Scene Design Assistant</p>
                                 </div>
-                                <p class="confidence-text">Confidence: <span id="emotion-confidence-text">85%</span></p>
                             </div>
 
-                            <div class="emotion-history">
-                                <h4>Emotion History</h4>
-                                <div class="emotion-timeline" id="emotion-timeline">
-                                    <div class="timeline-item">
-                                        <span class="timeline-time">00:00</span>
-                                        <span class="timeline-emotion">😊 Happy</span>
-                                        <span class="timeline-confidence">85%</span>
+                            <div class="chat-messages" id="chat-messages">
+                                <div class="message bot-message">
+                                    <div class="message-content">
+                                        <p>Hello! I'm your AI Director. Tell me about the scene you want to film, or ask
+                                            for advice on lighting and composition.</p>
                                     </div>
+                                </div>
+                            </div>
+
+                            <div class="chat-suggestions">
+                                <button class="suggestion-chip">A dark, moody detective scene</button>
+                                <button class="suggestion-chip">Wes Anderson style symmetry</button>
+                                <button class="suggestion-chip">Cyberpunk lighting advice</button>
+                                <button class="suggestion-chip">Romantic sunset beach shot</button>
+                            </div>
+
+                            <div class="chat-input-area">
+                                <div class="input-wrapper">
+                                    <input type="text" id="chat-input"
+                                        placeholder="Describe your scene or ask for advice..." autocomplete="off">
+                                    <button id="send-chat-btn">
+                                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                            <path d="M10 18L18 10L10 2" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M18 10H2" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -542,6 +560,7 @@
                                         </div>
                                     </div>
                                     <span id="hue-value">120°</span>
+                                    <p id="hue-explanation" class="metric-explanation">Cool Green tones</p>
                                 </div>
                                 <div class="metric-item">
                                     <label>Saturation</label>
@@ -550,6 +569,7 @@
                                             style="width: 70%; background: #667eea"></div>
                                     </div>
                                     <span id="saturation-value">70%</span>
+                                    <p id="saturation-explanation" class="metric-explanation">Vibrant and rich</p>
                                 </div>
                                 <div class="metric-item">
                                     <label>Brightness</label>
@@ -558,6 +578,7 @@
                                             style="width: 65%; background: #f093fb"></div>
                                     </div>
                                     <span id="brightness-value">65%</span>
+                                    <p id="brightness-explanation" class="metric-explanation">Balanced lighting</p>
                                 </div>
                             </div>
 
@@ -701,13 +722,6 @@
 
                             <div class="settings-section">
                                 <h4>Analysis Settings</h4>
-                                <div class="setting-item">
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="emotion-analysis-toggle" checked>
-                                        <span class="toggle-slider"></span>
-                                        <span class="toggle-label">Enable Emotion Analysis</span>
-                                    </label>
-                                </div>
                                 <div class="setting-item">
                                     <label class="toggle-switch">
                                         <input type="checkbox" id="color-analysis-toggle" checked>

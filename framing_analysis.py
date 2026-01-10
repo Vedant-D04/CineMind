@@ -52,6 +52,12 @@ def analyze_framing(frame):
     # Detect faces using FaceDetector
     faces = face_detector.detect_faces(frame)
     
+    checks = {
+        'rule_of_thirds': False,
+        'headroom': False,
+        'looking_room': False
+    }
+
     # If faces were detected, analyze the composition
     if faces:
         # Use the largest face for composition analysis (assuming it's the main subject)
@@ -59,15 +65,18 @@ def analyze_framing(frame):
         
         if validate_face_region(frame, largest_face):
             # Check rule of thirds
-            if not check_rule_of_thirds(largest_face, width, height):
+            checks['rule_of_thirds'] = check_rule_of_thirds(largest_face, width, height)
+            if not checks['rule_of_thirds']:
                 suggestions.append("Move subject to align with rule of thirds points")
             
             # Check headroom
-            if not check_headroom(largest_face, height):
+            checks['headroom'] = check_headroom(largest_face, height)
+            if not checks['headroom']:
                 suggestions.append("Adjust camera position for better headroom")
             
             # Check looking room
-            if not check_looking_room(largest_face, width):
+            checks['looking_room'] = check_looking_room(largest_face, width)
+            if not checks['looking_room']:
                 suggestions.append("Provide more looking room in front of the subject")
 
     # Update suggestion rotation system
@@ -104,4 +113,4 @@ def analyze_framing(frame):
         x, y, w, h = face
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-    return frame, suggestions
+    return frame, suggestions, checks
