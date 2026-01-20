@@ -14,6 +14,7 @@ export default function CameraFeed({ onResults, results }: CameraFeedProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isStreaming, setIsStreaming] = useState(false);
     const [fps, setFps] = useState(0);
+    const [latency, setLatency] = useState(0);
 
     // Load models on mount
     useEffect(() => {
@@ -123,6 +124,8 @@ export default function CameraFeed({ onResults, results }: CameraFeedProps) {
         const performAnalysis = async () => {
             if (!videoRef.current || !canvasRef.current) return;
 
+            const startTime = performance.now();
+
             // Perform parallel analysis
             const [colorResults, framingResults, sceneResults] = await Promise.all([
                 Promise.resolve(analyzeColor(videoRef.current, canvasRef.current)),
@@ -130,12 +133,18 @@ export default function CameraFeed({ onResults, results }: CameraFeedProps) {
                 analyzeScene(videoRef.current)
             ]);
 
+            const endTime = performance.now();
+            setLatency(Math.round(endTime - startTime));
+
             const newResults = {
                 timestamp: new Date().toISOString(),
                 color_analysis: colorResults,
                 framing: framingResults,
                 scene: sceneResults,
-                faces: framingResults?.faces || []
+                faces: framingResults?.faces || [],
+                performance: {
+                    latency: Math.round(endTime - startTime)
+                }
             };
 
             onResults(newResults);
@@ -207,6 +216,10 @@ export default function CameraFeed({ onResults, results }: CameraFeedProps) {
                 <div className="stat-card">
                     <div className="stat-label">Frame Rate</div>
                     <div className="stat-value">{fps} FPS</div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-label">Analysis Latency</div>
+                    <div className="stat-value">{latency} ms</div>
                 </div>
             </div>
         </div>
