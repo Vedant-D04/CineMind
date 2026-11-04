@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "../styles/globals.css";
 
 export const metadata: Metadata = {
-    title: "CineMind | Your AI Film Director",
-    description: "Advanced AI-powered cinematography and directorial guidance.",
+    title: "CineMind 2.0 | Your Filmmaking Copilot",
+    description: "Translate your intention into cinematic shots. Explore options, review frames, and stay in creative control.",
 };
 
 export default function RootLayout({

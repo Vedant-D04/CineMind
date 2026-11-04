@@ -1,14 +1,2 @@
-"use client";
-
-import LandingPage from "@/components/LandingPage";
-import { useRouter } from "next/navigation";
-
-export default function Home() {
-    const router = useRouter();
-
-    return (
-        <main>
-            <LandingPage onStart={() => router.push("/dashboard")} />
-        </main>
-    );
-}
+import { redirect } from 'next/navigation';
+export default function Home() { redirect('/dashboard'); }

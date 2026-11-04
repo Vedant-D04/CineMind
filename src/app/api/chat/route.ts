@@ -6,13 +6,6 @@ const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
 const api_version = process.env.AZURE_OPENAI_API_VERSION || "2024-12-01-preview";
 const deployment_name = process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "gpt-5.1-chat";
 
-const client = new OpenAI({
-    apiKey: subscription_key,
-    baseURL: `${endpoint}/openai/deployments/${deployment_name}`,
-    defaultHeaders: { "api-key": subscription_key },
-    defaultQuery: { "api-version": api_version },
-});
-
 const system_prompt = `
 You are an expert AI Film Director. Your goal is to help users translate their raw ideas into cinematic masterpieces.
 
@@ -31,6 +24,15 @@ INTERACTION STYLE:
 
 export async function POST(req: Request) {
     try {
+        if (!subscription_key || !endpoint) {
+            return NextResponse.json({ error: "The original Azure chat is not configured. Open the CineMind 2.0 workspace for rehearsal mode." }, { status: 503 });
+        }
+        const client = new OpenAI({
+            apiKey: subscription_key,
+            baseURL: `${endpoint}/openai/deployments/${deployment_name}`,
+            defaultHeaders: { "api-key": subscription_key },
+            defaultQuery: { "api-version": api_version },
+        });
         const { messages } = await req.json();
 
         const response = await client.chat.completions.create({

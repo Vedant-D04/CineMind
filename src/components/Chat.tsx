@@ -92,7 +92,7 @@ export default function Chat() {
                     {messages.map((msg, i) => (
                         <div key={i} className={`message ${msg.role === 'assistant' ? 'bot-message' : 'user-message'}`}>
                             <div className="message-content">
-                                <p dangerouslySetInnerHTML={{ __html: msg.content.replace(/\n/g, '<br/>') }} />
+                                <p style={{ whiteSpace: "pre-wrap" }}>{msg.content}</p>
                             </div>
                         </div>
                     ))}
